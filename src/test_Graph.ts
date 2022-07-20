@@ -18,9 +18,14 @@ g.addEdge('E', 'F');
 g.addEdge('E', 'C');
 g.addEdge('C', 'F');
 
-g.printGraph()
+g.printGraph();
 
-g.dfs_ti();
+g.bfs('D');
+g.modify_adjacency_list(g.find_path('D', 'C'));
+
+g.printGraph();
+
+g.dfs_start('D');
 
 console.log("Entdeckzeit");
 console.log(g.d);
