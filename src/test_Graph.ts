@@ -1,6 +1,6 @@
 import {Graph} from "./Graph";
 
-var g = new Graph(6);
+var g = new Graph();
 var vertices = [ 'A', 'B', 'C', 'D', 'E', 'F' ];
 
 // adding vertices
@@ -20,5 +20,20 @@ g.addEdge('C', 'F');
 
 g.printGraph()
 
-console.log("DFS");
-g.dfs('A');
+g.dfs_ti();
+
+console.log("Entdeckzeit");
+console.log(g.d);
+
+console.log("Tiefensuchwald");
+console.log(g.pi);
+
+console.log("Farbe");
+console.log(g.col);
+
+console.log("Beendezeit");
+console.log(g.f)
+
+console.log("Low-Werte");
+console.log(g.l);
+
