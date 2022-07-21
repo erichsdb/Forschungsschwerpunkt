@@ -10,6 +10,9 @@ export class Graph {
   time: number;
   l: Map<string, number>;
   keller: Array<string>;
+  components: Array<Array<string>>;
+  circle_stack: Array<Array<string>>;
+  circle: Array<string>;
 
   constructor() {
     this.AdjList = new Map();
@@ -21,6 +24,9 @@ export class Graph {
     this.l = new Map();
     this.time = 0;
     this.keller = [];
+    this.components = [];
+    this.circle_stack = [];
+    this.circle = [];
   }
 
   addVertex(v: string) {
@@ -53,69 +59,6 @@ export class Graph {
       } else {
         console.log("Vertice " + i + "had not been initialized yet.");
       }
-    }
-  }
-
-  create_circle(start: string) {
-    var output: Array<string> = [];
-    this.dfs(start);
-
-    var back_edges = Array.from(this.pi.keys()).filter(
-      (itm) => Array.from(this.pi.values()).indexOf(itm) === -1
-    );
-
-    for (const v of this.keller) {
-      output.push(v);
-      if (back_edges.includes(v)) {
-        return output;
-      }
-    }
-    // Fehler
-    return output;
-  }
-
-  /**
-   * Diese Methode initialisiert und ruft die rekursive Tiefensuche auf.
-   */
-  dfs(start: string) {
-    // 1. Initialisierung
-    for (var u of this.AdjList.keys()) {
-      this.col.set(u, State.white);
-      this.pi.set(u, null);
-    }
-    this.time = 0;
-
-    // Beginne beim Startknoten
-    this.keller.push(start);
-    this.dfs_visit(start);
-
-    // 2. Hauptschleife
-    for (var u of this.AdjList.keys()) {
-      if (this.col.get(u) == State.white) {
-        // Weiße Knoten werden vor dem Aufruf auf einem Keller gespeichert
-        this.keller.push(u);
-        this.dfs_visit(u);
-      }
-    }
-  }
-
-  /**
-   * Diese Methode initialisiert und ruft die rekursive Tiefensuche auf.
-   */
-  dfs_start(start: string) {
-    // 1. Initialisierung
-    for (var u of this.AdjList.keys()) {
-      this.col.set(u, State.white);
-      this.pi.set(u, null);
-    }
-    this.time = 0;
-
-    // Beginne beim Startknoten
-    this.mdfs_visit(start);
-
-    // 2. Hauptschleife (bei zusammenhängenden Graphen passier hier nichts)
-    for (var u of this.AdjList.keys()) {
-      if (this.col.get(u) == State.white) this.mdfs_visit(u);
     }
   }
 
@@ -164,6 +107,7 @@ export class Graph {
     }
 
     result = result.reverse();
+
     return result;
   }
 
@@ -189,33 +133,26 @@ export class Graph {
   }
 
   /**
-   * Diese Methode implementiert die Tiefensuche von S.48 des Skripts.
-   * @param u Knoten, der besucht wird
-   * @returns
+   *
+   * Diese Methode initialisiert und ruft die rekursive Tiefensuche auf.
+   * Als Ergebnis fallen Low-Werte, Entdeck-, Abschlusszeit und Elternliste an.
+   * @param start Startknoten, vom dem gesucht wird
    */
-  dfs_visit(u: string) {
-    // entdecke u
-    this.col.set(u, State.grey);
-    this.d.set(u, this.time);
-    this.time += 1;
-
-    // Bearbeitung von u
-    var neighbours = this.AdjList.get(u);
-    if (neighbours == undefined) return;
-
-    for (var v of neighbours) {
-      if (this.col.get(v) == State.white) {
-        // Weiße Knoten werden vor dem Aufruf auf einem Keller gespeichert
-        this.keller.push(v);
-
-        this.pi.set(v, u);
-        this.dfs_visit(v);
-      }
+  dfs(start: string) {
+    // 1. Initialisierung
+    for (var u of this.AdjList.keys()) {
+      this.col.set(u, State.white);
+      this.pi.set(u, null);
     }
+    this.time = 0;
 
-    this.col.set(u, State.black);
-    this.f.set(u, this.time);
-    this.time += 1;
+    // Beginne beim Startknoten
+    this.mdfs_visit(start);
+
+    // 2. Hauptschleife (bei zusammenhängenden Graphen passier hier nichts)
+    for (var u of this.AdjList.keys()) {
+      if (this.col.get(u) == State.white) this.mdfs_visit(u);
+    }
   }
 
   /**
@@ -252,5 +189,181 @@ export class Graph {
     this.col.set(u, State.black);
     this.f.set(u, this.time);
     this.time += 1;
+  }
+
+  zweifache_Komponenten(start: string) {
+    // Tiefensuche für L-Werte bereits gelaufen
+
+    // 1. Initialisierung
+    for (const v of this.AdjList.keys()) {
+      this.col.set(v, State.white);
+    }
+
+    // Keller ist bereits als leere Liste initialisiert
+    // this.keller = [];
+
+    // Beginne beim Startknoten (dieselbe Reihenfolge wie bei 1.)
+    this.ndfs_visit(start);
+
+    for (const v of this.AdjList.keys()) {
+      if (this.col.get(v) == State.white) {
+        this.ndfs_visit(v);
+        // Kann bei isolierten Knoten passieren
+        if (this.keller.length != 0) {
+          // Knote in Q(?) ausgeben
+          this.keller = [];
+        }
+      }
+    }
+  }
+
+  ndfs_visit(u: string) {
+    this.col.set(u, State.grey);
+    for (const v of this.AdjList.get(u)!) {
+      if (this.col.get(v) == State.white) {
+        this.keller.push(v);
+        this.ndfs_visit(v);
+
+        if (this.l.get(v)! >= this.d.get(u)!) {
+          // Solange Knoten von S entfernen und Ausgeben, bis v ausgegeben. Knoten u auch mit ausgeben;
+          console.log("Komponente gefunden");
+          var component = [this.keller.pop()!];
+          while (component[component.length - 1] !== v) {
+            component.push(this.keller.pop()!);
+          }
+          component.push(u);
+          this.components.push(component);
+        }
+      }
+    }
+    this.col.set(u, State.black);
+  }
+
+  /**
+   * ...
+   */
+  circle_finder(start: string, end: string) {
+    // 1. Initialisierung
+    for (var u of this.AdjList.keys()) {
+      this.col.set(u, State.white);
+    }
+
+    this.circle_stack = [];
+
+    // Startpunkt
+    this.find_next_edge(start, start, end);
+
+    // Ausgabe
+  }
+
+  /**
+   * ...
+   * @param u Knoten, der besucht wird
+   * @returns
+   */
+  find_next_edge(u: string, start: string, end: string) {
+    if (u == start && this.col.get(u) == State.grey) {
+      return;
+    }
+    // entdecke u
+    this.col.set(u, State.grey);
+
+    // Bearbeitung von u
+    var neighbours = this.AdjList.get(u);
+    if (neighbours == undefined) return;
+
+    if (this.col.get(end)! == State.grey) {
+      // Knoten mit niedrigstem Low-Wert folgen
+      var next = neighbours[0];
+      for (const neighbour of neighbours) {
+        if (
+          this.pi.get(u) == next ||
+          (this.l.get(next)! > this.l.get(neighbour)! &&
+            this.pi.get(u) != neighbour)
+        )
+          next = neighbour;
+      }
+
+      // Ist nächster Knoten grau? -> (Rückwertkante)
+      if (this.col.get(next) == State.grey) {
+        // Hauptpfad -> nächste Rückwärtskante suchen
+        console.log("Hauptkante " + next);
+        this.circle_stack.push(["H", next]);
+      } else {
+        // Nebenpfad -> Rückwärtskante weiter verfolgen
+        console.log("Rückwärtskante " + next);
+        this.circle_stack.push(["R", next]);
+      }
+      this.find_next_edge(next, start, end);
+    } else {
+      // nächsten Knoten aufrufen (Adjazenzliste ist sortiert)
+      console.log("Suche " + end + " über " + u);
+      if (neighbours[0] == end) {
+        console.log("Hauptkante " + end);
+        this.circle_stack.push(["H", end]);
+      }
+      this.find_next_edge(neighbours[0], start, end);
+    }
+  }
+
+  create_circle(start: string, end: string) {
+    var back_edges: Array<Array<string>> = [];
+    var done = false;
+    var edge = [];
+
+    while (this.circle_stack.length > 0) {
+      const next = this.circle_stack.pop()!;
+      edge.push(next[1]);
+
+      if (next[0] == "H") {
+        if (!done) {
+          done = true;
+        } else {
+          back_edges.push(edge);
+          edge = [];
+          done = false;
+        }
+      }
+    }
+
+    var next = start;
+    var start_nodes = back_edges.map((back_edges) => back_edges[0]);
+    var circle = [];
+    circle.push(next);
+
+    // Finde Ende
+    while (next != end) {
+      const index = start_nodes.indexOf(next);
+      if (index >= 0) {
+        circle.push(
+          ...back_edges[index].slice(1, back_edges[index].length)
+        );
+        next = back_edges[index][back_edges[index].length - 1];
+        back_edges[index] = [];
+      } else {
+        next = this.AdjList.get(next)![0];
+        circle.push(next);
+      }
+    }
+
+
+    var end_nodes = back_edges.map(
+      (back_edges) => back_edges[back_edges.length - 1]
+    );
+    // Finde Start
+    while (next != start) {
+      const index = end_nodes.indexOf(next);
+      if (index >= 0) {
+        circle.push(
+          ...(back_edges[index].reverse().slice(1, back_edges[index].length))
+        );
+        next = back_edges[index][back_edges[index].length - 1];
+      } else {
+        next = this.pi.get(next)!;
+        circle.push(next);
+      }
+    }
+
+    this.circle = circle;
   }
 }
