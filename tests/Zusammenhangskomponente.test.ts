@@ -4,12 +4,12 @@ test("Kreis ist eine Zusammenhangskomponente", () => {
   var g = new Graph();
   var vertices = ["A", "B", "C", "D"];
 
-  // adding vertices
+  // Knoten hinzufügen
   for (var i = 0; i < vertices.length; i++) {
     g.addVertex(vertices[i]);
   }
 
-  // adding edges
+  // Kanten hinzufügen
   g.addEdge("A", "B");
   g.addEdge("B", "C");
   g.addEdge("C", "D");
@@ -37,12 +37,12 @@ test("K_4 ist eine zweifache Zusammenhangskomponente", () => {
   var g = new Graph();
   var vertices = ["A", "B", "C", "D"];
 
-  // adding vertices
+  // Knoten hinzufügen
   for (var i = 0; i < vertices.length; i++) {
     g.addVertex(vertices[i]);
   }
 
-  // adding edges
+  // Kanten hinzufügen
   g.addEdge("A", "B");
   g.addEdge("A", "C");
   g.addEdge("A", "D");
@@ -72,12 +72,12 @@ test("zwei Komponenten bei zwei miteinander verbundenen Kreisen", () => {
   var g = new Graph();
   var vertices = ["A", "B", "C", "D", "E", "F"];
 
-  // adding vertices
+  // Knoten hinzufügen
   for (var i = 0; i < vertices.length; i++) {
     g.addVertex(vertices[i]);
   }
 
-  // adding edges
+  // Kanten hinzufügen
   g.addEdge("A", "B");
   g.addEdge("B", "C");
   g.addEdge("C", "D");
@@ -113,12 +113,12 @@ test("Komponenten im Pfad", () => {
   var g = new Graph();
   var vertices = ["A", "B", "C", "D", "E", "F"];
 
-  // adding vertices
+  // Knoten hinzufügen
   for (var i = 0; i < vertices.length; i++) {
     g.addVertex(vertices[i]);
   }
 
-  // adding edges
+  // Kanten hinzufügen
   g.addEdge("A", "B");
   g.addEdge("B", "C");
   g.addEdge("C", "D");

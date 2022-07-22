@@ -18,7 +18,6 @@ export class Graph {
 
   constructor() {
     this.AdjList = new Map();
-
     this.col = new Map();
     this.pi = new Map();
     this.d = new Map();

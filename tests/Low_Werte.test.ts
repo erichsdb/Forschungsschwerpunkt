@@ -4,12 +4,12 @@ test("Low-Werte für Pfad", () => {
   var g = new Graph();
   var vertices = ["A", "B", "C", "D", "E", "F"];
 
-  // adding vertices
+  // Knoten hinzufügen
   for (var i = 0; i < vertices.length; i++) {
     g.addVertex(vertices[i]);
   }
 
-  // adding edges
+  // Kanten hinzufügen
   g.addEdge("A", "B");
   g.addEdge("B", "C");
   g.addEdge("C", "D");
@@ -34,12 +34,12 @@ test("Low-Werte für Graph mit zwei Rückwärtskanten", () => {
   var g = new Graph();
   var vertices = ["A", "B", "C", "D", "E", "F"];
 
-  // adding vertices
+  // Knoten hinzufügen
   for (var i = 0; i < vertices.length; i++) {
     g.addVertex(vertices[i]);
   }
 
-  // adding edges
+  // Kanten hinzufügen
   g.addEdge("A", "B");
   g.addEdge("B", "C");
   g.addEdge("C", "D");
@@ -66,12 +66,12 @@ test("Low-Werte für einen Kreis", () => {
   var g = new Graph();
   var vertices = ["A", "B", "C", "D"];
 
-  // adding vertices
+  // Knoten hinzufügen
   for (var i = 0; i < vertices.length; i++) {
     g.addVertex(vertices[i]);
   }
 
-  // adding edges
+  // Kanten hinzufügen
   g.addEdge("A", "B");
   g.addEdge("B", "C");
   g.addEdge("C", "D");

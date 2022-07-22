@@ -3,12 +3,12 @@ import {Graph} from "./Graph";
 var g = new Graph();
 var vertices = [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'U', 'V'];
 
-// adding vertices
+// Knoten hinzufügen
 for (var i = 0; i < vertices.length; i++) {
     g.addVertex(vertices[i]);
 }
  
-// adding edges
+// Kanten hinzufügen
 g.addEdge('U', 'A');
 g.addEdge('U', 'J');
 g.addEdge('A', 'B');
