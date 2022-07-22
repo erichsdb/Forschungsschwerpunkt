@@ -11,8 +11,10 @@ export class Graph {
   l: Map<string, number>;
   keller: Array<string>;
   components: Array<Array<string>>;
-  circle_stack: Array<Array<string>>;
   circle: Array<string>;
+  done: Boolean;
+  back_edges: Array<Array<string>>;
+  edge: Array<string>;
 
   constructor() {
     this.AdjList = new Map();
@@ -25,8 +27,10 @@ export class Graph {
     this.time = 0;
     this.keller = [];
     this.components = [];
-    this.circle_stack = [];
     this.circle = [];
+    this.done = false;
+    this.back_edges = [];
+    this.edge = [];
   }
 
   addVertex(v: string) {
@@ -240,31 +244,21 @@ export class Graph {
   }
 
   /**
-   * ...
+   * Diese Methode findet Rückwärtskanten (inkl Start- und Endpunkt) und fügt diese this.back_edges hinzu.
+   * @param u Knoten in Bearbeitung
+   * @param start Startknoten
+   * @param end Zielknoten
+   * @returns Nothing
    */
-  circle_finder(start: string, end: string) {
-    // 1. Initialisierung
-    for (var u of this.AdjList.keys()) {
-      this.col.set(u, State.white);
-    }
-
-    this.circle_stack = [];
-
-    // Startpunkt
-    this.find_next_edge(start, start, end);
-
-    // Ausgabe
-  }
-
-  /**
-   * ...
-   * @param u Knoten, der besucht wird
-   * @returns
-   */
-  find_next_edge(u: string, start: string, end: string) {
+  find_back_edges(u: string, start: string, end: string) {
+    // Derzeitiger Knoten ist zum 2. Mal am Start (Ende)
     if (u == start && this.col.get(u) == State.grey) {
+      this.back_edges.push(this.edge);
+      this.edge = [];
+      this.done = false;
       return;
     }
+
     // entdecke u
     this.col.set(u, State.grey);
 
@@ -272,6 +266,7 @@ export class Graph {
     var neighbours = this.AdjList.get(u);
     if (neighbours == undefined) return;
 
+    // Wenn das Ende bereits entdeckt ist ...
     if (this.col.get(end)! == State.grey) {
       // Knoten mit niedrigstem Low-Wert folgen
       var next = neighbours[0];
@@ -283,87 +278,106 @@ export class Graph {
         )
           next = neighbour;
       }
-
       // Ist nächster Knoten grau? -> (Rückwertkante)
       if (this.col.get(next) == State.grey) {
         // Hauptpfad -> nächste Rückwärtskante suchen
-        console.log("Hauptkante " + next);
-        this.circle_stack.push(["H", next]);
+        if (!this.done) {
+          this.done = true;
+        } else {
+          this.back_edges.push(this.edge);
+          this.edge = [];
+          this.done = false;
+        }
+        this.edge.push(next);
       } else {
         // Nebenpfad -> Rückwärtskante weiter verfolgen
-        console.log("Rückwärtskante " + next);
-        this.circle_stack.push(["R", next]);
+        this.edge.push(next);
       }
-      this.find_next_edge(next, start, end);
+      this.find_back_edges(next, start, end);
+      //Ende noch nicht entdeckt (suche Ende)
     } else {
-      // nächsten Knoten aufrufen (Adjazenzliste ist sortiert)
-      console.log("Suche " + end + " über " + u);
+      // nächsten Knoten auf Hauptpfad aufrufen (Adjazenzliste ist sortiert)
       if (neighbours[0] == end) {
-        console.log("Hauptkante " + end);
-        this.circle_stack.push(["H", end]);
+        this.edge.push(end);
       }
-      this.find_next_edge(neighbours[0], start, end);
+      this.find_back_edges(neighbours[0], start, end);
     }
   }
 
+  /**
+   * Diese Methode erstellt einen Kreis auf den gefundenen Rückwärtskanten und
+   * fügt alle Knoten auf diesem Kreis this.circle hinzu.
+   * @param start Startknoten
+   * @param end Endknoten
+   */
   create_circle(start: string, end: string) {
-    var back_edges: Array<Array<string>> = [];
-    var done = false;
-    var edge = [];
-
-    while (this.circle_stack.length > 0) {
-      const next = this.circle_stack.pop()!;
-      edge.push(next[1]);
-
-      if (next[0] == "H") {
-        if (!done) {
-          done = true;
-        } else {
-          back_edges.push(edge);
-          edge = [];
-          done = false;
-        }
-      }
+    // Alle Knoten weiß setzen
+    for (var u of this.AdjList.keys()) {
+      this.col.set(u, State.white);
     }
+    // Rückwärtskanten finden
+    this.find_back_edges(start, start, end);
 
+    // Startknoten behandeln und zu Kreis hinzufügen
     var next = start;
-    var start_nodes = back_edges.map((back_edges) => back_edges[0]);
-    var circle = [];
-    circle.push(next);
+    this.circle.push(next);
 
+    // Startknoten der Rückwärtskanten
+    var start_nodes = this.back_edges.map(
+      (back_edges) => back_edges[back_edges.length - 1]
+    );
     // Finde Ende
     while (next != end) {
       const index = start_nodes.indexOf(next);
-      if (index >= 0) {
-        circle.push(
-          ...back_edges[index].slice(1, back_edges[index].length)
+      // Wenn es eine Rückwärtskante gibt, die noch nicht besucht wurde ...
+      if (
+        index >= 0 &&
+        this.col.get(next) != State.black &&
+        this.col.get(this.back_edges[index][0]) != State.black
+      ) {
+        next = this.back_edges[index][0];
+        // Kante auf Hauptpfad schwarz färben
+        this.col.set(next, State.black);
+        // Nehme Rückwärtskante (Richtung Ende) und füge alle Knoten dem Kreis hinzu
+        this.circle.push(
+          ...this.back_edges[index]
+            .reverse()
+            .slice(1, this.back_edges[index].length)
         );
-        next = back_edges[index][back_edges[index].length - 1];
-        back_edges[index] = [];
+        // Lösche Rückwärtskante
+        this.back_edges[index] = [];
+        // Wenn es keine Rückwärtskante gibt
       } else {
+        // Gehe Richtung Ende (nach unten) auf dem Hauptpfad
         next = this.AdjList.get(next)![0];
-        circle.push(next);
+        this.circle.push(next);
       }
     }
 
-
-    var end_nodes = back_edges.map(
-      (back_edges) => back_edges[back_edges.length - 1]
-    );
+    // Endknoten der Rückwärtskanten
+    var end_nodes = this.back_edges.map((back_edges) => back_edges[0]);
     // Finde Start
     while (next != start) {
       const index = end_nodes.indexOf(next);
-      if (index >= 0) {
-        circle.push(
-          ...(back_edges[index].reverse().slice(1, back_edges[index].length))
+      // Wenn es eine Rückwärtskante gibt, die noch nicht besucht wurde ...
+      if (
+        index >= 0 &&
+        this.col.get(next) != State.black &&
+        this.col.get(
+          this.back_edges[index][this.back_edges[index].length - 1]
+        ) != State.black
+      ) {
+        // Nehme Rückwärtskante (Richtung Start) und füge alle Knoten dem Kreis hinzu
+        next = this.back_edges[index][this.back_edges[index].length - 1];
+        this.circle.push(
+          ...this.back_edges[index].slice(1, this.back_edges[index].length)
         );
-        next = back_edges[index][back_edges[index].length - 1];
+        // Wenn es keine Rückwärtskante gibt
       } else {
+        // Gehe Richtung Start (nach oben) auf dem Hauptpfad
         next = this.pi.get(next)!;
-        circle.push(next);
+        this.circle.push(next);
       }
     }
-
-    this.circle = circle;
   }
 }
