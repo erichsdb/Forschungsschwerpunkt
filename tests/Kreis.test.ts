@@ -1,5 +1,65 @@
 import { Graph } from "../src/Graph";
 
+test("zwei Knoten besitzt keinen Kreis", () => {
+  var g = new Graph();
+  var vertices = ["A", "B"];
+
+  // Knoten hinzufügen
+  for (var i = 0; i < vertices.length; i++) {
+    g.addVertex(vertices[i]);
+  }
+
+  // Kanten hinzufügen
+  g.addEdge("A", "B");
+
+  // Start- und Endwerte definieren
+  var start = "A";
+  var end = "B";
+
+  // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
+  g.bfs(start);
+  g.modify_adjacency_list(g.find_path(start, end));
+
+  // Tiefensuche mit Low-Werten
+  g.dfs(start);
+
+  g.create_circle(start, end);
+
+  // Komponenten vergleichen
+  expect(g.circle).toEqual([]);
+});
+
+test("Pfad besitzt keinen Kreis", () => {
+  var g = new Graph();
+  var vertices = ["A", "B", "C", "D"];
+
+  // Knoten hinzufügen
+  for (var i = 0; i < vertices.length; i++) {
+    g.addVertex(vertices[i]);
+  }
+
+  // Kanten hinzufügen
+  g.addEdge("A", "B");
+  g.addEdge("B", "C");
+  g.addEdge("C", "D");
+
+  // Start- und Endwerte definieren
+  var start = "A";
+  var end = "D";
+
+  // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
+  g.bfs(start);
+  g.modify_adjacency_list(g.find_path(start, end));
+
+  // Tiefensuche mit Low-Werten
+  g.dfs(start);
+
+  g.create_circle(start, end);
+
+  // Komponenten vergleichen
+  expect(g.circle).toEqual([]);
+});
+
 test("Kreis besitzt einen Kreis", () => {
   var g = new Graph();
   var vertices = ["A", "B", "C", "D"];
