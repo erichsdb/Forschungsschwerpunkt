@@ -26,7 +26,6 @@ test("Kreis besitzt einen Kreis", () => {
   // Tiefensuche mit Low-Werten
   g.dfs(start);
 
-  g.circle_finder(start, end);
   g.create_circle(start, end);
 
   // Komponenten vergleichen
@@ -61,7 +60,6 @@ test("K_4 besitzt einen Kreis", () => {
   // Tiefensuche mit Low-Werten
   g.dfs(start);
 
-  g.circle_finder(start, end);
   g.create_circle(start, end);
 
   // Komponenten vergleichen

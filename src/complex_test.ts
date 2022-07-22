@@ -58,5 +58,5 @@ g.zweifache_Komponenten(start);
 
 console.log(g.components);
 
-g.circle_finder(start, end);
 g.create_circle(start, end);
+console.log(g.circle);
