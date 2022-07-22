@@ -60,3 +60,7 @@ console.log(g.components);
 
 g.create_circle(start, end);
 console.log(g.circle);
+
+g.checkIfCirlce(g.circle);
+console.log(g.isCircle);
+

@@ -15,6 +15,7 @@ export class Graph {
   done: Boolean;
   back_edges: Array<Array<string>>;
   edge: Array<string>;
+  isCircle: boolean;
 
   constructor() {
     this.AdjList = new Map();
@@ -30,6 +31,7 @@ export class Graph {
     this.done = false;
     this.back_edges = [];
     this.edge = [];
+    this.isCircle = false;
   }
 
   addVertex(v: string) {
@@ -43,6 +45,48 @@ export class Graph {
       this.AdjList.get(src)?.push(dest);
       this.AdjList.get(dest)?.push(src);
     }
+  }
+
+  checkIfCirlce(circle: Array<string>) {
+    // Alle Kanten auf schwarz setzen
+    for (const v of this.AdjList.keys()) {
+      this.col.set(v, State.black);
+    }
+
+    // Alle Kanten des Kreises weiß setzen
+    for (const v of circle) {
+      this.col.set(v, State.white);
+    }
+
+    // noch kein Kreis gefunden
+    this.isCircle = false;
+
+    for (const v of circle) {
+      this.circle_dfs(v, new Set<string>());
+    }
+  }
+
+  circle_dfs(v: string, current_circle: Set<string>) {
+    // Kein Kreis gefunden
+    if (this.col.get(v) == State.black) {
+    } else {
+      // Kreis gefunden
+      if (this.col.get(v) == State.grey) {
+        if (this.eqSet(current_circle, new Set(this.circle)))
+          this.isCircle = true;
+          return true;
+      }
+      // Setze Farbe auf grau
+      this.col.set(v, State.grey);
+      for (var u of this.AdjList.get(v)!) {
+        this.circle_dfs(u, current_circle.add(v));
+        this.col.set(v, State.black);
+      }
+    }
+  }
+
+  eqSet(xs: Set<string>, ys: Set<string>) {
+    return xs.size === ys.size && [...xs].every((x) => ys.has(x));
   }
 
   printGraph() {
@@ -194,6 +238,10 @@ export class Graph {
     this.time += 1;
   }
 
+  /**
+   * Findet alle zweifachen Zusammenhangskomponenten in einem beliebigen Graph.
+   * @param start Startknoten, vom dem aus gesucht wird
+   */
   zweifache_Komponenten(start: string) {
     // Tiefensuche für L-Werte bereits gelaufen
 
@@ -220,6 +268,10 @@ export class Graph {
     }
   }
 
+  /**
+   * Hilfsfunktion für zweichfache_Komponenten(start). Rekursive Suche nach Komponenten.
+   * @param u derzeitige Knoten
+   */
   ndfs_visit(u: string) {
     this.col.set(u, State.grey);
     for (const v of this.AdjList.get(u)!) {
@@ -229,7 +281,6 @@ export class Graph {
 
         if (this.l.get(v)! >= this.d.get(u)!) {
           // Solange Knoten von S entfernen und Ausgeben, bis v ausgegeben. Knoten u auch mit ausgeben;
-          console.log("Komponente gefunden");
           var component = [this.keller.pop()!];
           while (component[component.length - 1] !== v) {
             component.push(this.keller.pop()!);
@@ -277,6 +328,10 @@ export class Graph {
         )
           next = neighbour;
       }
+
+      // Wenn Vorgänger ausgewählt wurde gibt es keine Nachfolger -> keine Rückwärtskanten
+      if (next == this.pi.get(u)) return;
+
       // Ist nächster Knoten grau? -> (Rückwertkante)
       if (this.col.get(next) == State.grey) {
         // Hauptpfad -> nächste Rückwärtskante suchen
@@ -316,6 +371,18 @@ export class Graph {
     }
     // Rückwärtskanten finden
     this.find_back_edges(start, start, end);
+
+    // Graph ohne Rückwärtskanten, kann keinen Kreis bilden
+    if (this.back_edges.length < 1) {
+      this.circle = [];
+      return;
+    }
+
+    // zwei miteinander verbundene Knoten sind zweifach zusammenhängend, aber haben keinen ungerichteten Kreis
+    if (Array.from(this.AdjList.keys()).length < 3) {
+      this.circle = [];
+      return;
+    }
 
     // Startknoten behandeln und zu Kreis hinzufügen
     var next = start;
