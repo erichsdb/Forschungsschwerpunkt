@@ -1,3 +1,4 @@
+import { thresholdScott } from "d3";
 import { State } from "./State";
 
 // Klasse für ungerichtete Graphen
@@ -45,6 +46,28 @@ export class Graph {
       this.AdjList.get(src)?.push(dest);
       this.AdjList.get(dest)?.push(src);
     }
+  }
+
+  getGraphD3() {
+    var nodes = [];
+    for (const v of this.AdjList.keys()) {
+      console.log(this.col.get(v));
+      
+      nodes.push({name: v, color: this.col.get(v)});
+    }
+
+    var edges = [];
+    for (const v of this.AdjList.keys()) {
+      for (const u of this.AdjList.get(v)!) {
+        edges.push({source: v, target: u, color: 'green'})
+      }
+    }
+
+    return {nodes: nodes, links: edges};
+  }
+
+  setNodeColor(v: string) {
+    this.col.set(v, 'red');
   }
 
   checkIfCirlce(circle: Array<string>) {
