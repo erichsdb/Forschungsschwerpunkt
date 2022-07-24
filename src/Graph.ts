@@ -1,4 +1,3 @@
-import { thresholdScott } from "d3";
 import { State } from "./State";
 
 // Klasse für ungerichtete Graphen
@@ -17,6 +16,8 @@ export class Graph {
   back_edges: Array<Array<string>>;
   edge: Array<string>;
   isCircle: boolean;
+  bfs_animation: Array<{}>;
+  circle_animation: Array<{}>;
 
   constructor() {
     this.AdjList = new Map();
@@ -33,6 +34,8 @@ export class Graph {
     this.back_edges = [];
     this.edge = [];
     this.isCircle = false;
+    this.bfs_animation = [];
+    this.circle_animation = []
   }
 
   addVertex(v: string) {
@@ -50,16 +53,14 @@ export class Graph {
 
   getGraphD3() {
     var nodes = [];
-    for (const v of this.AdjList.keys()) {
-      console.log(this.col.get(v));
-      
+    for (const v of this.AdjList.keys()) {    
       nodes.push({name: v, color: this.col.get(v)});
     }
 
     var edges = [];
     for (const v of this.AdjList.keys()) {
       for (const u of this.AdjList.get(v)!) {
-        edges.push({source: v, target: u, color: 'green'})
+        edges.push({source: v, target: u, color: 'black'})
       }
     }
 
@@ -143,21 +144,29 @@ export class Graph {
       this.pi.set(u, null);
     }
 
+    this.bfs_animation.push(this.getGraphD3());
+
     // 2. Breitensuche mit Warteschlange
     this.col.set(s, State.grey);
     var Q = [];
     Q.push(s);
+    
+    this.bfs_animation.push(this.getGraphD3());
+    
     while (Q.length != 0) {
       var u = Q[0];
       for (const v of this.AdjList.get(u)!) {
         if (this.col.get(v) == State.white) {
           this.col.set(v, State.grey);
           this.pi.set(v, u);
+          this.bfs_animation.push(this.getGraphD3());
           Q.push(v);
         }
       }
       Q.shift();
       this.col.set(u, State.black);
+      this.bfs_animation.push(this.getGraphD3());
+
     }
   }
 
@@ -392,8 +401,12 @@ export class Graph {
     for (var u of this.AdjList.keys()) {
       this.col.set(u, State.white);
     }
+    this.circle_animation.push(this.getGraphD3());
+
     // Rückwärtskanten finden
     this.find_back_edges(start, start, end);
+    this.circle_animation.push(this.getGraphD3());
+
 
     // Graph ohne Rückwärtskanten, kann keinen Kreis bilden
     if (this.back_edges.length < 1) {
@@ -410,6 +423,7 @@ export class Graph {
     // Startknoten behandeln und zu Kreis hinzufügen
     var next = start;
     this.circle.push(next);
+    this.circle_animation.push(this.getGraphD3());
 
     // Startknoten der Rückwärtskanten
     var start_nodes = this.back_edges.map(
@@ -428,11 +442,14 @@ export class Graph {
         // Kante auf Hauptpfad schwarz färben
         this.col.set(next, State.black);
         // Nehme Rückwärtskante (Richtung Ende) und füge alle Knoten dem Kreis hinzu
-        this.circle.push(
+        const back_edges = this.circle.push(
           ...this.back_edges[index]
             .reverse()
             .slice(1, this.back_edges[index].length)
         );
+        for (const v of this.back_edges[index]) this.col.set(v, State.circle);
+        this.circle_animation.push(this.getGraphD3());
+
         // Lösche Rückwärtskante
         this.back_edges[index] = [];
         // Wenn es keine Rückwärtskante gibt
@@ -440,6 +457,8 @@ export class Graph {
         // Gehe Richtung Ende (nach unten) auf dem Hauptpfad
         next = this.AdjList.get(next)![0];
         this.circle.push(next);
+        this.circle_animation.push(this.getGraphD3());
+
       }
     }
 
@@ -461,11 +480,15 @@ export class Graph {
         this.circle.push(
           ...this.back_edges[index].slice(1, this.back_edges[index].length)
         );
+        for (const v of this.back_edges[index]) this.col.set(v, State.circle);
+        this.circle_animation.push(this.getGraphD3());
+
         // Wenn es keine Rückwärtskante gibt
       } else {
         // Gehe Richtung Start (nach oben) auf dem Hauptpfad
         next = this.pi.get(next)!;
         this.circle.push(next);
+        this.circle_animation.push(this.getGraphD3());
       }
     }
   }

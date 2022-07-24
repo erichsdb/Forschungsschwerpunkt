@@ -1,5 +1,6 @@
 export const State = {
-    grey: "grey",
-    white: "white",
-    black: "black"
+    grey: "orange",
+    white: "green",
+    black: "red",
+    circle: "blue"
 }

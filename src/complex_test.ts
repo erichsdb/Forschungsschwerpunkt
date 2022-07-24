@@ -48,6 +48,9 @@ var end = 'V'
 
 // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
 g.bfs(start);
+
+console.log(g.bfs_animation);
+
 g.modify_adjacency_list(g.find_path(start, end));
 
 // Tiefensuche mit Low-Werten

@@ -27,8 +27,8 @@ g.addEdge("F", "H");
 g.addEdge("F", "G");
 
 // Start- und Endwerte definieren
-var start = 'U';
-var end = 'V'
+var start = "U";
+var end = "V";
 
 // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
 g.bfs(start);
@@ -37,22 +37,37 @@ g.modify_adjacency_list(g.find_path(start, end));
 // Tiefensuche mit Low-Werten
 g.dfs(start);
 
-// Ändere Farbe 
-g.setNodeColor('A');
+// Zwei-fache Komponenten finden
+g.zweifache_Komponenten(start);
+
+console.log(g.components);
+
+g.create_circle(start, end);
+console.log(g.circle);
+
+//intialize data
+var graph = g.getGraphD3();
 
 //initilize svg or grab svg
 var svg = d3.select("svg");
 var width = svg.attr("width");
 var height = svg.attr("height");
 
-//intialize data
-var graph = g.getGraphD3();
-
-console.log(graph);
+// Slider
+var xRangeSlider = document.getElementById("mySlider");
+xRangeSlider.min = 0;
+xRangeSlider.max = g.circle_animation.length - 1
+xRangeSlider.value = 0;
 
 var simulation = d3
   .forceSimulation(graph.nodes)
-  .force("link", d3.forceLink().id(d => d.name).links(graph.links))
+  .force(
+    "link",
+    d3
+      .forceLink()
+      .id((d) => d.name)
+      .links(graph.links)
+  )
   .force("charge", d3.forceManyBody().strength(-100))
   .force("center", d3.forceCenter(width / 2, height / 2))
   .on("tick", ticked);
@@ -67,7 +82,7 @@ var links = svg
   .attr("stroke-width", function (d) {
     return 3;
   })
-  .style("stroke", d => d.color);
+  .style("stroke", (d) => d.color);
 
 var drag = d3
   .drag()
@@ -83,15 +98,34 @@ var textsAndNodes = svg
   .append("g")
   .call(drag);
 
-var cirlces = textsAndNodes.append("circle").attr("r", 5).style("fill", d => d.color);
-var texts = textsAndNodes.append("text").attr('x', 6).attr('y', 3).text(d => d.name);
+var cirlces = textsAndNodes
+  .data(graph.nodes)
+  .append("circle")
+  .attr("r", 5)
+  .style("fill", (d) => d.color);
+var texts = textsAndNodes
+  .append("text")
+  .attr("x", 6)
+  .attr("y", 3)
+  .text((d) => d.name);
+
+var slider = d3.select("#mySlider").on("change", (d) => {
+  update(xRangeSlider.value);
+});
+
+function update(selectedValue) {
+  console.log(selectedValue);
+  graph = g.circle_animation[selectedValue];
+
+  console.log(graph.nodes);
+
+  // recolors circles
+  svg.selectAll("circle").data(graph.nodes).style("fill", (d) => d.color);
+}
 
 function ticked() {
   // translate (x, y)
   textsAndNodes.attr("transform", (d) => "translate(" + d.x + ", " + d.y + ")");
-  
-  // reloads data
-  // graph = g.getGraphD3();
 
   links
     .attr("x1", function (d) {
