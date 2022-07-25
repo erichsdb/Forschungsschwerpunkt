@@ -35,7 +35,7 @@ export class Graph {
     this.edge = [];
     this.isCircle = false;
     this.bfs_animation = [];
-    this.circle_animation = []
+    this.circle_animation = [];
   }
 
   addVertex(v: string) {
@@ -52,23 +52,35 @@ export class Graph {
   }
 
   getGraphD3() {
+    var visited_nodes = []
     var nodes = [];
-    for (const v of this.AdjList.keys()) {    
-      nodes.push({name: v, color: this.col.get(v)});
+    for (const v of this.AdjList.keys()) {
+      nodes.push({ name: v, color: this.col.get(v) });
     }
 
     var edges = [];
     for (const v of this.AdjList.keys()) {
+      var v_index = this.circle.indexOf(v);
       for (const u of this.AdjList.get(v)!) {
-        edges.push({source: v, target: u, color: 'black'})
+        if (visited_nodes.indexOf(u) != -1) continue;
+        const u_index = this.circle.indexOf(u);
+        if (
+          v_index != -1 &&
+          u_index != -1 &&
+          (u_index - 1 == v_index || u_index + 1 == v_index ||
+            (v_index != this.circle.lastIndexOf(v)) || u_index != this.circle.lastIndexOf(u))
+        ) {
+          edges.push({ source: v, target: u, color: State.circle });
+        } else edges.push({ source: v, target: u, color: "black" });
       }
+      visited_nodes.push(v);
     }
 
-    return {nodes: nodes, links: edges};
+    return { nodes: nodes, links: edges };
   }
 
   setNodeColor(v: string) {
-    this.col.set(v, 'red');
+    this.col.set(v, "red");
   }
 
   checkIfCirlce(circle: Array<string>) {
@@ -98,7 +110,7 @@ export class Graph {
       if (this.col.get(v) == State.grey) {
         if (this.eqSet(current_circle, new Set(this.circle)))
           this.isCircle = true;
-          return true;
+        return true;
       }
       // Setze Farbe auf grau
       this.col.set(v, State.grey);
@@ -150,9 +162,9 @@ export class Graph {
     this.col.set(s, State.grey);
     var Q = [];
     Q.push(s);
-    
+
     this.bfs_animation.push(this.getGraphD3());
-    
+
     while (Q.length != 0) {
       var u = Q[0];
       for (const v of this.AdjList.get(u)!) {
@@ -166,7 +178,6 @@ export class Graph {
       Q.shift();
       this.col.set(u, State.black);
       this.bfs_animation.push(this.getGraphD3());
-
     }
   }
 
@@ -405,8 +416,7 @@ export class Graph {
 
     // Rückwärtskanten finden
     this.find_back_edges(start, start, end);
-    this.circle_animation.push(this.getGraphD3());
-
+    // this.circle_animation.push(this.getGraphD3());
 
     // Graph ohne Rückwärtskanten, kann keinen Kreis bilden
     if (this.back_edges.length < 1) {
@@ -422,6 +432,7 @@ export class Graph {
 
     // Startknoten behandeln und zu Kreis hinzufügen
     var next = start;
+
     this.circle.push(next);
     this.circle_animation.push(this.getGraphD3());
 
@@ -457,8 +468,8 @@ export class Graph {
         // Gehe Richtung Ende (nach unten) auf dem Hauptpfad
         next = this.AdjList.get(next)![0];
         this.circle.push(next);
+        this.col.set(next, State.circle);
         this.circle_animation.push(this.getGraphD3());
-
       }
     }
 
@@ -488,6 +499,7 @@ export class Graph {
         // Gehe Richtung Start (nach oben) auf dem Hauptpfad
         next = this.pi.get(next)!;
         this.circle.push(next);
+        this.col.set(next, State.circle);
         this.circle_animation.push(this.getGraphD3());
       }
     }

@@ -56,7 +56,7 @@ var height = svg.attr("height");
 // Slider
 var xRangeSlider = document.getElementById("mySlider");
 xRangeSlider.min = 0;
-xRangeSlider.max = g.circle_animation.length - 1
+xRangeSlider.max = g.circle_animation.length - 1;
 xRangeSlider.value = 0;
 
 var simulation = d3
@@ -68,7 +68,7 @@ var simulation = d3
       .id((d) => d.name)
       .links(graph.links)
   )
-  .force("charge", d3.forceManyBody().strength(-100))
+  .force("charge", d3.forceManyBody().strength(-300))
   .force("center", d3.forceCenter(width / 2, height / 2))
   .on("tick", ticked);
 
@@ -114,13 +114,32 @@ var slider = d3.select("#mySlider").on("change", (d) => {
 });
 
 function update(selectedValue) {
-  console.log(selectedValue);
   graph = g.circle_animation[selectedValue];
-
-  console.log(graph.nodes);
-
+  console.log(graph.links);
   // recolors circles
-  svg.selectAll("circle").data(graph.nodes).style("fill", (d) => d.color);
+  svg
+    .selectAll("circle")
+    .data(graph.nodes)
+    .style("fill", (d) => d.color);
+
+  // keep force on links
+  simulation = simulation
+    .force(
+      "link",
+      d3
+        .forceLink()
+        .id((d) => d.name)
+        .links(graph.links)
+    )
+    .force("charge", d3.forceManyBody().strength(-300))
+    .force("center", d3.forceCenter(width / 2, height / 2))
+    .on("tick", ticked);
+    
+  // recolor edges
+  svg
+    .selectAll("line")
+    .data(graph.links)
+    .style("stroke", (d) => d.color);
 }
 
 function ticked() {
