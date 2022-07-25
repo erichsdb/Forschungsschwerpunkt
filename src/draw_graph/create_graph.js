@@ -46,7 +46,7 @@ g.create_circle(start, end);
 console.log(g.circle);
 
 //intialize data
-var graph = g.getGraphD3();
+var graph = g.circle_animation[0];
 
 //initilize svg or grab svg
 var svg = d3.select("svg");
@@ -113,6 +113,29 @@ var slider = d3.select("#mySlider").on("change", (d) => {
   update(xRangeSlider.value);
 });
 
+var moving = false;
+
+var slider_button = d3.select("#slider-button");
+var timer = null
+
+slider_button.on("click", (d) => {
+    
+    moving = true;
+    timer = setInterval(step, 1000);
+});
+
+function step() {
+  update(++xRangeSlider.value);
+  if (xRangeSlider.value >= xRangeSlider.max) {
+    moving = false;
+    //xRangeSlider.value = 0;
+    //update(xRangeSlider.value);
+    clearInterval(timer);
+    // timer = 0;
+    slider_button.text("Play");
+  }
+}
+
 function update(selectedValue) {
   graph = g.circle_animation[selectedValue];
   console.log(graph.links);
@@ -134,7 +157,7 @@ function update(selectedValue) {
     .force("charge", d3.forceManyBody().strength(-300))
     .force("center", d3.forceCenter(width / 2, height / 2))
     .on("tick", ticked);
-    
+
   // recolor edges
   svg
     .selectAll("line")
