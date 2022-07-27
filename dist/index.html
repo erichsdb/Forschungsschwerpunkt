@@ -1,6 +1,29 @@
 <!DOCTYPE html>
 <meta charset="utf-8" />
 <style>
+  body {
+    font-family: "avenir next", Arial, sans-serif;
+    font-size: 12px;
+    color: #696969;
+  }
+
+  #slider-button {
+    background: #f08080;
+    padding-right: 26px;
+    border-radius: 3px;
+    border: none;
+    color: white;
+    margin: 0;
+    padding: 0 12px;
+    width: 60px;
+    cursor: pointer;
+    height: 30px;
+  }
+
+  #slider-button:hover {
+    background-color: #696969;
+  }
+
   .links line {
     stroke: #999;
     stroke-opacity: 0.6;
@@ -10,10 +33,30 @@
     stroke: #fff;
     stroke-width: 1.5px;
   }
-</style>
 
-<button id="slider-button">Play</button>
-<input type="range" name="mySlider" id=mySlider min="0" max="100" value="0">
+  #interactive {
+    position: relative;
+    top: 0;
+    left: 0;
+  }
+</style>
+<h1>Disjunkte Wege in zweifach-zusammenhängenden Graphen</h1>
+
+<div id="info">
+  <p id="start">Start:</p>
+  <p id="end">Target:</p>
+</div>
+<div id="interactive">
+  <button id="slider-button">Play</button>
+  <input
+    type="range"
+    name="mySlider"
+    id="mySlider"
+    min="0"
+    max="100"
+    value="0"
+  />
+</div>
 
 <svg width="960" height="600"></svg>
 

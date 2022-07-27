@@ -1,30 +1,8 @@
-import { Graph } from "../Graph.ts";
+import {create_31_nodes_graph} from "../graphs/31_nodes";
+import {create_12_nodes_graph} from "../graphs/12_nodes";
 
-var g = new Graph();
-
-var vertices = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "U", "V"];
-
-// Knoten hinzufügen
-for (var i = 0; i < vertices.length; i++) {
-  g.addVertex(vertices[i]);
-}
-
-// Kanten hinzufügen
-g.addEdge("U", "A");
-g.addEdge("U", "J");
-g.addEdge("A", "B");
-g.addEdge("B", "C");
-g.addEdge("I", "J");
-g.addEdge("C", "D");
-g.addEdge("E", "I");
-g.addEdge("E", "A");
-g.addEdge("D", "F");
-g.addEdge("E", "G");
-g.addEdge("E", "V");
-g.addEdge("V", "F");
-g.addEdge("V", "H");
-g.addEdge("F", "H");
-g.addEdge("F", "G");
+var g = create_31_nodes_graph();
+//var g = create_12_nodes_graph();
 
 // Start- und Endwerte definieren
 var start = "U";
@@ -32,7 +10,8 @@ var end = "V";
 
 // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
 g.bfs(start);
-g.modify_adjacency_list(g.find_path(start, end));
+var shortest_path = g.find_path(start, end)
+g.modify_adjacency_list(shortest_path);
 
 // Tiefensuche mit Low-Werten
 g.dfs(start);
@@ -40,10 +19,7 @@ g.dfs(start);
 // Zwei-fache Komponenten finden
 g.zweifache_Komponenten(start);
 
-console.log(g.components);
-
 g.create_circle(start, end);
-console.log(g.circle);
 
 //intialize data
 var graph = g.circle_animation[0];
@@ -52,6 +28,12 @@ var graph = g.circle_animation[0];
 var svg = d3.select("svg");
 var width = svg.attr("width");
 var height = svg.attr("height");
+
+// Set start, end
+var start_field = d3.select("#start")
+start_field.text('Start: ' + start);
+var target_field = d3.select("#end")
+target_field.text('End: ' + end);
 
 // Slider
 var xRangeSlider = document.getElementById("mySlider");
@@ -68,7 +50,7 @@ var simulation = d3
       .id((d) => d.name)
       .links(graph.links)
   )
-  .force("charge", d3.forceManyBody().strength(-300))
+  .force("charge", d3.forceManyBody().strength(-60))
   .force("center", d3.forceCenter(width / 2, height / 2))
   .on("tick", ticked);
 
@@ -113,32 +95,37 @@ var slider = d3.select("#mySlider").on("change", (d) => {
   update(xRangeSlider.value);
 });
 
-var moving = false;
-
 var slider_button = d3.select("#slider-button");
-var timer = null
+var timer = null;
 
 slider_button.on("click", (d) => {
-    
-    moving = true;
-    timer = setInterval(step, 1000);
+  var button = d3.select("#slider-button");
+
+  if (parseInt(xRangeSlider.value) == parseInt(xRangeSlider.max)) xRangeSlider.value = xRangeSlider.min;
+
+  if (button.text() == 'Play') {
+    timer = setInterval(step, 300);
+    button.text('Pause');
+  } else if (button.text() == 'Pause') {
+    clearInterval(timer);
+    button.text('Play');
+
+  }
+  
 });
 
 function step() {
   update(++xRangeSlider.value);
-  if (xRangeSlider.value >= xRangeSlider.max) {
-    moving = false;
-    //xRangeSlider.value = 0;
-    //update(xRangeSlider.value);
+
+  if (parseInt(xRangeSlider.value) >= parseInt(xRangeSlider.max)) {
+    xRangeSlider.value = 0;
     clearInterval(timer);
-    // timer = 0;
     slider_button.text("Play");
   }
 }
 
 function update(selectedValue) {
   graph = g.circle_animation[selectedValue];
-  console.log(graph.links);
   // recolors circles
   svg
     .selectAll("circle")
@@ -154,7 +141,7 @@ function update(selectedValue) {
         .id((d) => d.name)
         .links(graph.links)
     )
-    .force("charge", d3.forceManyBody().strength(-300))
+    .force("charge", d3.forceManyBody().strength(-60))
     .force("center", d3.forceCenter(width / 2, height / 2))
     .on("tick", ticked);
 
