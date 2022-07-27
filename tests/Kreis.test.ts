@@ -123,7 +123,7 @@ test("K_4 besitzt einen Kreis", () => {
   g.create_circle(start, end);
 
   // Komponenten vergleichen
-  expect(g.circle).toEqual(["A", "B", "C", "A"]);
+  expect(g.circle).toEqual(["A", "D", "C", "B", "A"]);
 });
 
 test("Komplexes Beispiel besitzt einen Kreis", () => {

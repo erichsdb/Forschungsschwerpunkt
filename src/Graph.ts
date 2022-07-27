@@ -1,3 +1,5 @@
+import { thresholdScott } from "d3";
+import { Serializer } from "v8";
 import { State } from "./State";
 
 // Klasse für ungerichtete Graphen
@@ -52,7 +54,7 @@ export class Graph {
   }
 
   getGraphD3() {
-    var visited_nodes = []
+    var visited_nodes = [];
     var nodes = [];
     for (const v of this.AdjList.keys()) {
       nodes.push({ name: v, color: this.col.get(v) });
@@ -67,8 +69,12 @@ export class Graph {
         if (
           v_index != -1 &&
           u_index != -1 &&
-          (u_index - 1 == v_index || u_index + 1 == v_index ||
-            (v_index != this.circle.lastIndexOf(v)) || u_index != this.circle.lastIndexOf(u))
+          (u_index - 1 == v_index ||
+            u_index + 1 == v_index ||
+            (v_index != this.circle.lastIndexOf(v) &&
+              this.circle.lastIndexOf(v) == u_index + 1) ||
+            (u_index != this.circle.lastIndexOf(u) &&
+              this.circle.lastIndexOf(u) == v_index + 1))
         ) {
           edges.push({ source: v, target: u, color: State.circle });
         } else edges.push({ source: v, target: u, color: "black" });
@@ -352,50 +358,68 @@ export class Graph {
       return;
     }
 
-    // entdecke u
-    this.col.set(u, State.grey);
+    if (this.col.get(u) == State.white)
+      // entdecke u
+      this.col.set(u, State.grey);
 
     // Bearbeitung von u
-    var neighbours = this.AdjList.get(u);
+    var neighbours = this.AdjList.get(u)!;
+    // Wenn es keine Nachbarn gibt, kann direkt
     if (neighbours == undefined) return;
+    const precedessor = this.pi.get(u);
+    // Vorgänger wird entfernt
+    neighbours = neighbours.filter((node) => node !== precedessor);
 
     // Wenn das Ende bereits entdeckt ist ...
     if (this.col.get(end)! == State.grey) {
-      // Knoten mit niedrigstem Low-Wert folgen
+      // weißem Knoten mit niedrigstem Low-Wert folgen ODER dem Nachfolger
       var next = neighbours[0];
+      // 3x Loopup O(1) -> pro Nachbar max. O(n-1)
       for (const neighbour of neighbours) {
         if (
-          this.pi.get(u) == next ||
-          (this.l.get(next)! > this.l.get(neighbour)! &&
-            this.pi.get(u) != neighbour)
+          // Falls low(nachbar) <= low(current) UND col(nachbar) == white
+          this.l.get(next)! >= this.l.get(neighbour)! &&
+          this.col.get(neighbour) == State.white
         )
           next = neighbour;
       }
 
-      // Wenn Vorgänger ausgewählt wurde gibt es keine Nachfolger -> keine Rückwärtskanten
-      if (next == this.pi.get(u)) return;
-
-      // Ist nächster Knoten grau? -> (Rückwertkante)
+      // Ist nächster Knoten grau? -> (Rückwertkante beendet und wieder auf Hauptpfad ODER noch auf Hauptpfad)
       if (this.col.get(next) == State.grey) {
         // Hauptpfad -> nächste Rückwärtskante suchen
         if (!this.done) {
+          // Startpunkt der Rückwärtskante
           this.done = true;
         } else {
+          this.edge.push(next);
+          // Endpunkt der Rückwärtskante
           this.back_edges.push(this.edge);
           this.edge = [];
+          // this.edge.push(next);
           this.done = false;
+          // Nachfolger auf Hauptpfad neuer Startpunkt für Suche
+          this.find_back_edges(this.AdjList.get(next)![0], start, end);
         }
-        this.edge.push(next);
       } else {
-        // Nebenpfad -> Rückwärtskante weiter verfolgen
+        // Hauptpfad -> Rückwärtskante
+        if (
+          this.edge.length == 0 &&
+          this.col.get(u) == State.grey &&
+          this.col.get(next) == State.white
+        ) {
+          this.edge.push(u);
+          this.done = true;
+        }
+        // Rückwärtskante -> Rückwärtskante
         this.edge.push(next);
+        this.find_back_edges(next, start, end);
       }
-      this.find_back_edges(next, start, end);
+
       //Ende noch nicht entdeckt (suche Ende)
     } else {
       // nächsten Knoten auf Hauptpfad aufrufen (Adjazenzliste ist sortiert)
       if (neighbours[0] == end) {
-        this.edge.push(end);
+        this.done = true;
       }
       this.find_back_edges(neighbours[0], start, end);
     }
@@ -416,7 +440,9 @@ export class Graph {
 
     // Rückwärtskanten finden
     this.find_back_edges(start, start, end);
-    // this.circle_animation.push(this.getGraphD3());
+
+    // Färbe Hauptkanten ein
+    this.color_main_path(start, end);
 
     // Graph ohne Rückwärtskanten, kann keinen Kreis bilden
     if (this.back_edges.length < 1) {
@@ -450,16 +476,18 @@ export class Graph {
         this.col.get(this.back_edges[index][0]) != State.black
       ) {
         next = this.back_edges[index][0];
+        // Nehme Rückwärtskante (Richtung Ende) und füge alle Knoten dem Kreis hinzu
         // Kante auf Hauptpfad schwarz färben
         this.col.set(next, State.black);
-        // Nehme Rückwärtskante (Richtung Ende) und füge alle Knoten dem Kreis hinzu
-        const back_edges = this.circle.push(
-          ...this.back_edges[index]
-            .reverse()
-            .slice(1, this.back_edges[index].length)
-        );
-        for (const v of this.back_edges[index]) this.col.set(v, State.circle);
-        this.circle_animation.push(this.getGraphD3());
+
+        const current_edge = this.back_edges[index]
+          .reverse()
+          .slice(1, this.back_edges[index].length);
+        for (const v of current_edge) {
+          this.circle.push(v);
+          this.col.set(v, State.circle);
+          this.circle_animation.push(this.getGraphD3());
+        }
 
         // Lösche Rückwärtskante
         this.back_edges[index] = [];
@@ -488,12 +516,15 @@ export class Graph {
       ) {
         // Nehme Rückwärtskante (Richtung Start) und füge alle Knoten dem Kreis hinzu
         next = this.back_edges[index][this.back_edges[index].length - 1];
-        this.circle.push(
-          ...this.back_edges[index].slice(1, this.back_edges[index].length)
+        const current_back_edge = this.back_edges[index].slice(
+          1,
+          this.back_edges[index].length
         );
-        for (const v of this.back_edges[index]) this.col.set(v, State.circle);
-        this.circle_animation.push(this.getGraphD3());
-
+        for (const v of current_back_edge) {
+          this.circle.push(v);
+          this.col.set(v, State.circle);
+          this.circle_animation.push(this.getGraphD3());
+        }
         // Wenn es keine Rückwärtskante gibt
       } else {
         // Gehe Richtung Start (nach oben) auf dem Hauptpfad
@@ -503,5 +534,12 @@ export class Graph {
         this.circle_animation.push(this.getGraphD3());
       }
     }
+  }
+
+  color_main_path(start: string, end: string) {
+    var next = this.AdjList.get(start)![0];
+    this.col.set(start, State.main);
+    if (next == end) this.col.set(next, State.main);
+    else this.color_main_path(next, end);
   }
 }
