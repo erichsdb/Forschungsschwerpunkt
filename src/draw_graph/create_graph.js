@@ -18,6 +18,7 @@ g.dfs(start);
 
 // Zwei-fache Komponenten finden
 g.zweifache_Komponenten(start);
+console.log(g.components);
 
 g.create_circle(start, end);
 

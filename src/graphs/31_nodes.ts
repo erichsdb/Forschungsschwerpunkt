@@ -1,4 +1,4 @@
-import { Graph } from "../Graph.ts";
+import { Graph } from "../Graph";
 
 export function create_31_nodes_graph() {
   var g = new Graph();
@@ -72,16 +72,16 @@ export function create_31_nodes_graph() {
   g.addEdge("O", "S");
   g.addEdge("P", "Q");
   g.addEdge("R", "W");
-  g.addEdge("R", "N");
-  g.addEdge("S", "T");
-  g.addEdge("S", "W");
+  g.addEdge("R", "L");
+  // g.addEdge("S", "T");
+  // g.addEdge("S", "W");
   g.addEdge("S", "Z");
-  g.addEdge("T", "A1");
+  // g.addEdge("T", "A1");
   g.addEdge("W", "X");
   g.addEdge("X", "Y");
-  g.addEdge("Y", "Z");
+  // g.addEdge("Y", "Z");
   g.addEdge("Y", "E1");
-  g.addEdge("Z", "E1");
+  g.addEdge("S", "E1");
   g.addEdge("Z", "A1");
   g.addEdge("A1", "B1");
   g.addEdge("B1", "C1");
