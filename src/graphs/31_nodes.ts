@@ -23,7 +23,7 @@ export function create_31_nodes_graph() {
     "Q",
     "R",
     "S",
-    "T",
+    //"T",
     "U",
     "V",
     "W",
@@ -57,7 +57,7 @@ export function create_31_nodes_graph() {
   g.addEdge("F", "G");
   g.addEdge("G", "H");
   g.addEdge("G", "I");
-  g.addEdge("G", "J");
+  g.addEdge("H", "J");
   g.addEdge("H", "I");
   g.addEdge("I", "K");
   g.addEdge("I", "M");
@@ -72,7 +72,8 @@ export function create_31_nodes_graph() {
   g.addEdge("O", "S");
   g.addEdge("P", "Q");
   g.addEdge("R", "W");
-  g.addEdge("R", "L");
+  //g.addEdge("R", "L");
+  g.addEdge('Q', 'S')
   // g.addEdge("S", "T");
   // g.addEdge("S", "W");
   g.addEdge("S", "Z");

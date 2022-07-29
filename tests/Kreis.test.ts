@@ -16,14 +16,8 @@ test("zwei Knoten besitzt keinen Kreis", () => {
   var start = "A";
   var end = "B";
 
-  // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
-  g.bfs(start);
-  g.modify_adjacency_list(g.find_path(start, end));
-
-  // Tiefensuche mit Low-Werten
-  g.dfs(start);
-
-  g.create_circle(start, end);
+  g.checkIfCirlce(start, end);
+  g.colorCircle();
 
   // Komponenten vergleichen
   expect(g.circle).toEqual([]);
@@ -47,14 +41,8 @@ test("Pfad besitzt keinen Kreis", () => {
   var start = "A";
   var end = "D";
 
-  // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
-  g.bfs(start);
-  g.modify_adjacency_list(g.find_path(start, end));
-
-  // Tiefensuche mit Low-Werten
-  g.dfs(start);
-
-  g.create_circle(start, end);
+  g.checkIfCirlce(start, end);
+  g.colorCircle();
 
   // Komponenten vergleichen
   expect(g.circle).toEqual([]);
@@ -79,17 +67,11 @@ test("Kreis besitzt einen Kreis", () => {
   var start = "A";
   var end = "C";
 
-  // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
-  g.bfs(start);
-  g.modify_adjacency_list(g.find_path(start, end));
-
-  // Tiefensuche mit Low-Werten
-  g.dfs(start);
-
-  g.create_circle(start, end);
+  g.checkIfCirlce(start, end);
+  g.colorCircle();
 
   // Komponenten vergleichen
-  expect(g.circle).toEqual(["A", "D", "C", "B", "A"]);
+  expect(g.circle).toEqual(["A", "B", "C", "D", "A"]);
 });
 
 test("K_4 besitzt einen Kreis", () => {
@@ -113,17 +95,11 @@ test("K_4 besitzt einen Kreis", () => {
   var start = "A";
   var end = "C";
 
-  // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
-  g.bfs(start);
-  g.modify_adjacency_list(g.find_path(start, end));
-
-  // Tiefensuche mit Low-Werten
-  g.dfs(start);
-
-  g.create_circle(start, end);
+  g.checkIfCirlce(start, end);
+  g.colorCircle();
 
   // Komponenten vergleichen
-  expect(g.circle).toEqual(["A", "D", "B", "C", "A"]);
+  expect(g.circle).toEqual(["A", "B", "C", "A"]);
 });
 
 test("Komplexes Beispiel besitzt einen Kreis", () => {
@@ -156,26 +132,20 @@ test("Komplexes Beispiel besitzt einen Kreis", () => {
   var start = "U";
   var end = "V";
 
-  // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
-  g.bfs(start);
-  g.modify_adjacency_list(g.find_path(start, end));
-
-  // Tiefensuche mit Low-Werten
-  g.dfs(start);
-
-  g.create_circle(start, end);
+  g.checkIfCirlce(start, end);
+  g.colorCircle();
 
   expect(g.circle).toEqual([
     "U",
-    "J",
-    "I",
-    "E",
-    "V",
-    "F",
-    "D",
-    "C",
-    "B",
     "A",
+    "B",
+    "C",
+    "D",
+    "F",
+    "V",
+    "E",
+    "I",
+    "J",
     "U",
   ]);
 });

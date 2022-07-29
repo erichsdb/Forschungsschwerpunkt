@@ -1,6 +1,4 @@
-import { thresholdScott } from "d3";
-import { normalize } from "path";
-import { Serializer } from "v8";
+
 import { State } from "./State";
 
 // Klasse für ungerichtete Graphen
@@ -19,6 +17,7 @@ export class Graph {
   isCircle: boolean;
   bfs_animation: Array<{}>;
   circle_animation: Array<{}>;
+  circles: Array<Array<string>>;
 
   constructor() {
     this.AdjList = new Map();
@@ -35,6 +34,7 @@ export class Graph {
     this.isCircle = false;
     this.bfs_animation = [];
     this.circle_animation = [];
+    this.circles = [];
   }
 
   addVertex(v: string) {
@@ -86,41 +86,76 @@ export class Graph {
     this.col.set(v, "red");
   }
 
-  checkIfCirlce(circle: Array<string>) {
-    // Alle Kanten auf schwarz setzen
+  checkIfCirlce(start: string, end: string) {
+    var col: Map<string, string> = new Map();
+
+    // Alle Knoten weiß setzen
     for (const v of this.AdjList.keys()) {
-      this.col.set(v, State.black);
+      col.set(v, State.white);
     }
 
-    // Alle Kanten des Kreises weiß setzen
-    for (const v of circle) {
-      this.col.set(v, State.white);
+    // Starte bei Start
+    this.circle_dfs(start, end, new Array<string>(), new Map(col));
+  }
+
+  circle_dfs(
+    v: string,
+    end: string,
+    current_circle: Array<string>,
+    col: Map<string, string>
+  ) {
+    const v_col = col.get(v);
+    // Ist V kein Nachbar vom letzten Knoten im Kreis?
+    if (
+      v_col == State.black &&
+      current_circle.length > 0 &&
+      this.AdjList.get(current_circle[current_circle.length - 1])!.indexOf(v) ==
+        -1
+    ) {
+      return;
     }
 
-    // noch kein Kreis gefunden
-    this.isCircle = false;
+    // Kreis gefunden -> Kreis ausgeben
+    if (v_col == State.grey) {
+      // Kreise mit Start & Ende und Anfang == Ende & Länge > 2
+      if (
+        current_circle.length > 2 &&
+        current_circle.indexOf(end) != -1 &&
+        this.AdjList.get(current_circle[current_circle.length - 1])!.indexOf(
+          current_circle[0]
+        ) != -1
+      ) {
+        // Start am Ende hinzufügen um Kreis zu schließen
+        current_circle.push(current_circle[0]);
+        // Kreis den gültigen Kreisen hinzufügen
+        this.circles.push(current_circle)
+        return;
+      }
+    // Kein Kreis gefunden -> DFS fortsetzen
+    } else if (v_col == State.white){
+      if (v_col == State.white) col.set(v, State.grey);
+      else col.set(v, State.black);
 
-    for (const v of circle) {
-      this.circle_dfs(v, new Set<string>());
+      // unbesuchte Knoten gefunden
+      current_circle.push(v);
+      for (var u of this.AdjList.get(v)!) {
+        this.circle_dfs(u, end, Array.from(current_circle), new Map(col));
+      }
     }
   }
 
-  circle_dfs(v: string, current_circle: Set<string>) {
-    // Kein Kreis gefunden
-    if (this.col.get(v) == State.black) {
-    } else {
-      // Kreis gefunden
-      if (this.col.get(v) == State.grey) {
-        if (this.eqSet(current_circle, new Set(this.circle)))
-          this.isCircle = true;
-        return true;
-      }
-      // Setze Farbe auf grau
-      this.col.set(v, State.grey);
-      for (var u of this.AdjList.get(v)!) {
-        this.circle_dfs(u, current_circle.add(v));
-        this.col.set(v, State.black);
-      }
+  colorCircle(chosen_circle: number = 0) {
+    if (this.circles.length == 0) return
+
+    // Alle Knoten weiß setzen
+    for (var u of this.AdjList.keys()) {
+      this.col.set(u, State.white);
+    }
+    this.circle_animation.push(this.getGraphD3());
+    // Kanten dem Graphen hinzufügen
+    for (const v of this.circles[chosen_circle]) {
+      this.circle.push(v);
+      this.circle_animation.push(this.getGraphD3())
     }
   }
 
@@ -355,10 +390,8 @@ export class Graph {
   ) {
     // Derzeitiger Knoten ist zum 2. Mal am Start (Ende)
     if (u == start && this.col.get(u) == State.black) {
-      if (edge.length > 2) {
-        this.back_edges.push(edge);
-        for (const node of edge) this.col.set(node, State.black);
-      }
+      this.back_edges.push(edge);
+      for (const node of edge) this.col.set(node, State.black);
 
       edge = [];
       done = false;
@@ -415,10 +448,9 @@ export class Graph {
             // Entpunkt d. Rückwärtskante markieren
             this.col.set(next, State.black);
             // Endpunkt der Rückwärtskante
-            if (my_edge.length > 2) {
-              this.back_edges.push(my_edge);
-              for (const node of my_edge) this.col.set(node, State.black);
-            }
+            this.back_edges.push(my_edge);
+            for (const node of my_edge) this.col.set(node, State.black);
+
             my_edge = [];
             // this.edge.push(next);
             my_done = false;
@@ -499,7 +531,8 @@ export class Graph {
       var index = -1;
       for (const neighbour of this.AdjList.get(next)!) {
         const temp = start_nodes.indexOf(neighbour);
-        if (temp != -1 && this.col.get(start_nodes[index]) != State.circle) index = temp;
+        if (temp != -1 && this.col.get(start_nodes[index]) != State.circle)
+          index = temp;
       }
       // Wenn es eine Rückwärtskante gibt, die noch nicht besucht wurde ...
       if (
@@ -541,7 +574,8 @@ export class Graph {
       var index = -1;
       for (const neighbour of this.AdjList.get(next)!) {
         const temp = end_nodes.indexOf(neighbour);
-        if (temp != -1 && this.col.get(end_nodes[index]) != State.circle) index = temp;
+        if (temp != -1 && this.col.get(end_nodes[index]) != State.circle)
+          index = temp;
       }
       // Wenn es eine Rückwärtskante gibt, die noch nicht besucht wurde ...
       if (
@@ -549,7 +583,7 @@ export class Graph {
         this.col.get(next) != State.black &&
         this.col.get(
           this.back_edges[index][this.back_edges[index].length - 1]
-        ) != State.black && 
+        ) != State.black &&
         this.col.get(
           this.back_edges[index][this.back_edges[index].length - 2]
         ) != State.circle
