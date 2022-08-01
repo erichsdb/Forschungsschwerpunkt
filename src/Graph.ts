@@ -1,4 +1,3 @@
-
 import { State } from "./State";
 
 // Klasse für ungerichtete Graphen
@@ -18,6 +17,8 @@ export class Graph {
   bfs_animation: Array<{}>;
   circle_animation: Array<{}>;
   circles: Array<Array<string>>;
+  complexity_counter: number;
+  done: boolean = false;
 
   constructor() {
     this.AdjList = new Map();
@@ -35,6 +36,7 @@ export class Graph {
     this.bfs_animation = [];
     this.circle_animation = [];
     this.circles = [];
+    this.complexity_counter = 0;
   }
 
   addVertex(v: string) {
@@ -95,11 +97,12 @@ export class Graph {
     }
 
     // Starte bei Start
-    this.circle_dfs(start, end, new Array<string>(), new Map(col));
+    this.circle_dfs(start, start, end, new Array<string>(), new Map(col));
   }
 
   circle_dfs(
     v: string,
+    start: string,
     end: string,
     current_circle: Array<string>,
     col: Map<string, string>
@@ -107,14 +110,17 @@ export class Graph {
     const v_col = col.get(v);
     // Ist V kein Nachbar vom letzten Knoten im Kreis?
     if (
-      v_col == State.black &&
-      current_circle.length > 0 &&
-      this.AdjList.get(current_circle[current_circle.length - 1])!.indexOf(v) ==
-        -1
+      this.done ||
+      v_col == State.black ||
+      (current_circle.length > 0 &&
+        this.AdjList.get(current_circle[current_circle.length - 1])!.indexOf(
+          v
+        ) == -1)
     ) {
       return;
     }
 
+    this.complexity_counter++;
     // Kreis gefunden -> Kreis ausgeben
     if (v_col == State.grey) {
       // Kreise mit Start & Ende und Anfang == Ende & Länge > 2
@@ -128,24 +134,32 @@ export class Graph {
         // Start am Ende hinzufügen um Kreis zu schließen
         current_circle.push(current_circle[0]);
         // Kreis den gültigen Kreisen hinzufügen
-        this.circles.push(current_circle)
+        this.circles.push(current_circle);
+        // true <=> findet nur einen Kreis, false <=> findet alle Kreise
+        this.done = true;
         return;
       }
-    // Kein Kreis gefunden -> DFS fortsetzen
-    } else if (v_col == State.white){
-      if (v_col == State.white) col.set(v, State.grey);
+      // Kein Kreis gefunden -> DFS fortsetzen
+    } else if (v_col == State.white) {
+      if (v == start) col.set(v, State.grey);
       else col.set(v, State.black);
 
       // unbesuchte Knoten gefunden
       current_circle.push(v);
       for (var u of this.AdjList.get(v)!) {
-        this.circle_dfs(u, end, Array.from(current_circle), new Map(col));
+        this.circle_dfs(
+          u,
+          start,
+          end,
+          Array.from(current_circle),
+          new Map(col)
+        );
       }
     }
   }
 
   colorCircle(chosen_circle: number = 0) {
-    if (this.circles.length == 0) return
+    if (this.circles.length == 0) return;
 
     // Alle Knoten weiß setzen
     for (var u of this.AdjList.keys()) {
@@ -155,7 +169,7 @@ export class Graph {
     // Kanten dem Graphen hinzufügen
     for (const v of this.circles[chosen_circle]) {
       this.circle.push(v);
-      this.circle_animation.push(this.getGraphD3())
+      this.circle_animation.push(this.getGraphD3());
     }
   }
 

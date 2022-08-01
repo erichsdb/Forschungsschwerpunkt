@@ -42,3 +42,8 @@ console.log(g.circle);
 
 g.checkIfCirlce(start, end);
 console.log(g.isCircle);
+
+console.log(g.complexity_counter);
+console.log(g.circles);
+
+
