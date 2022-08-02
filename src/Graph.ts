@@ -19,7 +19,8 @@ export class Graph {
   circles: Array<Array<string>>;
   complexity_counter: number;
   done: boolean = false;
-  down: boolean = false;
+  search_back_edge: boolean = false;
+  forward: boolean = true;
 
   constructor() {
     this.AdjList = new Map();
@@ -396,10 +397,8 @@ export class Graph {
     this.circle_animation.push(this.getGraphD3());
 
     this.end_to_start(end, start, end, true);
-    this.start_to_end(start, start, end, true);
-
-    if (this.circle.length == 3) {
-      this.circle = [];
+    if (this.circle.length != 0) {
+      this.start_to_end(start, start, end, []);
     }
 
     console.log(this.circle);
@@ -414,104 +413,155 @@ export class Graph {
    * @returns Nichts
    */
   end_to_start(current: string, start: string, end: string, done: boolean) {
+    // Abfangen beim Erreichen des Start
     if (current == start) {
-      this.col.set(end, State.main);
+      this.col.set(current, State.black);
+      if (this.forward) this.circle.push(current);
+      else this.circle.unshift(current);
+      this.forward = !this.forward;
+      this.circle_animation.push(this.getGraphD3());
       return;
     }
 
+    // Abbruchbedingung für bereits besuchte Knoten (nicht auf Hauptpfad)
     if (this.col.get(current) == State.black) {
       this.circle = [];
       return;
     }
 
-    // Nächstes Element auf Hauptpfad wählen (nach unten gehen)
+    // Nächste Knoten der Adjazenzliste
     var next = this.AdjList.get(current)![0];
-    if (!done) {
-      done = true;
-      this.col.set(current, State.grey);
-      this.circle_animation.push(this.getGraphD3());
-      // Tiefensuche nach nächstem Start
-      // this.connect_edge(next);
-    } else {
+
+    // Suchen der nächsten Rückwärtskante entlang des Hauptpfades
+    if (this.search_back_edge) {
       var l_current = this.l.get(current)!;
-      done = false;
-      // Mit Low-Wert Rückwärtskante verfolgen (gibt es keine, wird next nicht verändert)
+
+      // Iterieren über alle Nachbarn
       for (const neighbour of this.AdjList.get(current)!) {
         const l_temp = this.l.get(neighbour)!;
+        // Exisitiert eine Rückwärtskante?
         if (
           (l_current == l_temp && this.col.get(neighbour) == State.white) ||
           neighbour == start
         ) {
           next = neighbour;
-          done = true;
+        }
+      }
+      // Falls eine Rückwärtskante gefunden wurde ...
+      if (next != this.AdjList.get(current)![0]) {
+        // Füge alle Knoten entland des Hauptpfades an den Kreis
+        this.connect_edge(current, []);
+        this.search_back_edge = false;
+      }
+      // Nehmen der nächsten Rückwärtskante
+    } else {
+      // Einen Knoten nach unten gehen, wenn Rückwärtskante verlassen wurde -> Suchen der nächsten Rückwärtskante entlang des Hauptpfades
+      if (!done) {
+        this.col.set(current, State.grey);
+        if (this.forward) this.circle.push(current);
+        else this.circle.unshift(current);
+        this.circle_animation.push(this.getGraphD3());
+
+        done = true;
+        // Richtungsänderung, wie Knoten dem Kreis hinzugefügt werden (von vorne/hinten)
+        this.forward = !this.forward;
+        // Suchen der nächsten Rückwärtskante entlang des Hauptpfades
+        this.search_back_edge = true;
+        // Weiterverfolgen der Rückwärtskante, bzw. Beenden der Suche -> Tiefensuche bis wieder auf Hauptpfad
+      } else {
+        var l_current = this.l.get(current)!;
+        // Wenn keine Rückwärtskante gefunden wird, bleibt done = false;
+        done = false;
+        // Mit Low-Wert Rückwärtskante verfolgen (gibt es keine, wird next nicht verändert)
+        for (const neighbour of this.AdjList.get(current)!) {
+          const l_temp = this.l.get(neighbour)!;
+          if (
+            (l_current == l_temp && this.col.get(neighbour) == State.white) ||
+            neighbour == start
+          ) {
+            // Finden einer Rückwärtskante, bzw. auf Rückwärtspfad bleiben
+            next = neighbour;
+            done = true;
+          }
         }
       }
     }
+
     if (
       (this.col.get(current) == State.main &&
-        this.col.get(next) != State.main) ||
+        this.col.get(next) != State.main &&
+        done) ||
       this.col.get(current) == State.white
     ) {
-      this.col.set(current, State.grey);
-      this.circle.push(current);
+      this.col.set(current, State.black);
+      if (this.forward) this.circle.push(current);
+      else this.circle.unshift(current);
       this.circle_animation.push(this.getGraphD3());
+    } else if (
+      this.col.get(current) == State.main &&
+      this.col.get(next) == State.main &&
+      next == this.pi.get(current)!
+    ) {
+      this.circle = [];
+      return;
     }
-
     this.end_to_start(next, start, end, done);
   }
 
-  connect_edge(start: string) {
+  connect_edge(start: string, edges: Array<string>) {
     console.log(start);
-    if (this.col.get(start) == State.grey) return;
-    this.col.set(start, State.black);
+    if (
+      this.col.get(start) == State.black ||
+      this.col.get(start) == State.grey
+    ) {
+      if (this.forward) this.circle.push(...edges);
+      else this.circle.unshift(...edges.reverse());
+      this.circle_animation.push(this.getGraphD3());
+      return;
+    }
+    this.col.set(start, State.grey);
+    edges.unshift(start);
+    this.circle_animation.push(this.getGraphD3());
 
     var next = this.AdjList.get(start)![0];
-    this.connect_edge(next);
+    this.connect_edge(next, edges);
   }
 
-  start_to_end(current: string, start: string, end: string, take: boolean) {
+  start_to_end(
+    current: string,
+    start: string,
+    end: string,
+    path: Array<string>
+  ) {
     if (current == end) {
       this.col.set(current, State.black);
-      this.circle.push(current);
+      if (this.forward) this.circle.push(...path);
+      else this.circle.unshift(...path.reverse());
       this.circle_animation.push(this.getGraphD3());
       return;
     }
 
-    if (this.col.get(current) == State.black) {
-      this.circle = [];
+    if (
+      (this.col.get(current) == State.black ||
+        this.col.get(current) == State.grey) &&
+      current != start
+    ) {
+      if (this.forward) this.circle.push(...path);
+      else this.circle.unshift(...path.reverse());
+      this.circle_animation.push(this.getGraphD3());
       return;
     }
 
     // Nächstes Element auf Hauptpfad wählen
     var next = this.AdjList.get(current)![0];
 
-    if (take) {
-      take = false;
-      // Mit Low-Wert Rückwärtskante verfolgen (gibt es keine, wird next nicht verändert)
-      for (const neighbour of this.AdjList.get(current)!) {
-        if (
-          (this.col.get(neighbour) == State.grey &&
-            this.col.get(current) == State.main &&
-            this.l.get(neighbour) == this.d.get(current)) ||
-          (this.col.get(neighbour) == State.grey &&
-            this.col.get(current) == State.grey &&
-            this.l.get(neighbour) == this.l.get(current)) ||
-          neighbour == end
-        ) {
-          take = true;
-          next = neighbour;
-        } else if (this.col.get(neighbour) == State.main) {
-          next = neighbour;
-        }
-      }
-    } else {
-      take = true;
-    }
-
     this.col.set(current, State.black);
-    this.circle.push(current);
+    if (this.forward) path.push(current);
+    else path.unshift(current);
+
     this.circle_animation.push(this.getGraphD3());
-    this.start_to_end(next, start, end, take);
+
+    this.start_to_end(next, start, end, path);
   }
 
   color_main_path(start: string, end: string) {

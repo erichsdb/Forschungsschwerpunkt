@@ -43,6 +43,10 @@ export function create_31_nodes_graph() {
   }
 
   // Kanten hinzufügen
+  // g.addEdge("B", "R");
+  // g.addEdge("B", "W");
+  
+
   g.addEdge("U", "A");
   // g.addEdge("U", "B");
   g.addEdge("U", "C");
@@ -81,7 +85,7 @@ export function create_31_nodes_graph() {
   g.addEdge("W", "X");
   g.addEdge("X", "Y");
   // g.addEdge("Y", "Z");
-  g.addEdge("Y", "E1");
+  g.addEdge("Y", "D1");
   g.addEdge("S", "E1");
   g.addEdge("Z", "A1");
   g.addEdge("A1", "B1");
@@ -89,7 +93,7 @@ export function create_31_nodes_graph() {
   g.addEdge("C1", "V");
   g.addEdge("D1", "V");
   g.addEdge("D1", "E1");
-  g.addEdge("E1", "V");
+  // g.addEdge("E1", "V");
 
   return g;
 }

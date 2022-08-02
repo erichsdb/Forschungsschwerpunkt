@@ -2,7 +2,7 @@ import {create_31_nodes_graph} from "../graphs/31_nodes";
 import {create_12_nodes_graph} from "../graphs/12_nodes";
 
 var g = create_31_nodes_graph();
-//var g = create_12_nodes_graph();
+// var g = create_12_nodes_graph();
 
 // Start- und Endwerte definieren
 var start = "U";
