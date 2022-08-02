@@ -9,25 +9,30 @@ var start = "U";
 var end = "V";
 
 // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
-// g.bfs(start);
-// var shortest_path = g.find_path(start, end)
-// g.modify_adjacency_list(shortest_path);
+g.bfs(start);
+var shortest_path = g.find_path(end)
+g.modify_adjacency_list(shortest_path);
 
 // Tiefensuche mit Low-Werten
-// g.dfs(start);
+g.dfs(start);
 
 // Zwei-fache Komponenten finden
-// g.zweifache_Komponenten(start);
-// console.log(g.components);
+g.zweifache_Komponenten(start);
+console.log(g.components);
 
-// g.create_circle(start, end);
-g.checkIfCirlce(start, end);
-g.colorCircle();
+//g.create_circle(start, end);
+// g.checkIfCirlce(start, end);
+// g.colorCircle();
 
-console.log(g.circles);
+//console.log(g.circles);
+
+g.build_circle(start, end);
+console.log(g.cirlce);
 
 //intialize data
 var graph = g.circle_animation[0];
+
+// console.log(g.l);
 
 //initilize svg or grab svg
 var svg = d3.select("svg");

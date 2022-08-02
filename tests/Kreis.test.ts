@@ -16,8 +16,16 @@ test("zwei Knoten besitzt keinen Kreis", () => {
   var start = "A";
   var end = "B";
 
-  g.checkIfCirlce(start, end);
-  g.colorCircle();
+  // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
+  g.bfs(start);
+  // Adjazenzlisten verändern, damit Hauptpfad von U -> V direkt erkennbar ist
+  var shortest_path = g.find_path(end);
+  g.modify_adjacency_list(shortest_path);
+
+  // Tiefensuche mit Low-Werten
+  g.dfs(start);
+  // Kreis bauen
+  g.build_circle(start, end);
 
   // Komponenten vergleichen
   expect(g.circle).toEqual([]);
@@ -41,8 +49,16 @@ test("Pfad besitzt keinen Kreis", () => {
   var start = "A";
   var end = "D";
 
-  g.checkIfCirlce(start, end);
-  g.colorCircle();
+  // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
+  g.bfs(start);
+  // Adjazenzlisten verändern, damit Hauptpfad von U -> V direkt erkennbar ist
+  var shortest_path = g.find_path(end);
+  g.modify_adjacency_list(shortest_path);
+
+  // Tiefensuche mit Low-Werten
+  g.dfs(start);
+  // Kreis bauen
+  g.build_circle(start, end);
 
   // Komponenten vergleichen
   expect(g.circle).toEqual([]);
@@ -67,11 +83,19 @@ test("Kreis besitzt einen Kreis", () => {
   var start = "A";
   var end = "C";
 
-  g.checkIfCirlce(start, end);
-  g.colorCircle();
+  // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
+  g.bfs(start);
+  // Adjazenzlisten verändern, damit Hauptpfad von U -> V direkt erkennbar ist
+  var shortest_path = g.find_path(end);
+  g.modify_adjacency_list(shortest_path);
+
+  // Tiefensuche mit Low-Werten
+  g.dfs(start);
+  // Kreis bauen
+  g.build_circle(start, end);
 
   // Komponenten vergleichen
-  expect(g.circle).toEqual(["A", "B", "C", "D", "A"]);
+  expect(g.circle).toEqual(["C", "D", "A", "B", "C"]);
 });
 
 test("K_4 besitzt einen Kreis", () => {
@@ -95,11 +119,19 @@ test("K_4 besitzt einen Kreis", () => {
   var start = "A";
   var end = "C";
 
-  g.checkIfCirlce(start, end);
-  g.colorCircle();
+  // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
+  g.bfs(start);
+  // Adjazenzlisten verändern, damit Hauptpfad von U -> V direkt erkennbar ist
+  var shortest_path = g.find_path(end);
+  g.modify_adjacency_list(shortest_path);
+
+  // Tiefensuche mit Low-Werten
+  g.dfs(start);
+  // Kreis bauen
+  g.build_circle(start, end);
 
   // Komponenten vergleichen
-  expect(g.circle).toEqual(["A", "B", "C", "A"]);
+  expect(g.circle).toEqual(["C", "D", "B", "A", "C"]);
 });
 
 test("Komplexes Beispiel besitzt einen Kreis", () => {
@@ -131,21 +163,28 @@ test("Komplexes Beispiel besitzt einen Kreis", () => {
   // Start- und Endwerte definieren
   var start = "U";
   var end = "V";
+  // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
+  g.bfs(start);
+  // Adjazenzlisten verändern, damit Hauptpfad von U -> V direkt erkennbar ist
+  var shortest_path = g.find_path(end);
+  g.modify_adjacency_list(shortest_path);
 
-  g.checkIfCirlce(start, end);
-  g.colorCircle();
+  // Tiefensuche mit Low-Werten
+  g.dfs(start);
+  // Kreis bauen
+  g.build_circle(start, end);
 
   expect(g.circle).toEqual([
-    "U",
-    "A",
-    "B",
-    "C",
-    "D",
-    "F",
     "V",
-    "E",
-    "I",
-    "J",
+    "F",
+    "D",
+    "C",
+    "B",
+    "A",
     "U",
+    "J",
+    "I",
+    "E",
+    "V",
   ]);
 });

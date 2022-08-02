@@ -1,7 +1,9 @@
 import { Graph } from "./Graph";
 import {create_31_nodes_graph} from "./graphs/31_nodes";
+// import {create_12_nodes_graph} from "./graphs/12_nodes";
 
 var g = create_31_nodes_graph();
+//var g = create_12_nodes_graph();
 
 // console.log("Farbe");
 // console.log(g.col);
@@ -23,7 +25,7 @@ var end = "V";
 // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
 g.bfs(start);
 
-var shortest_path = g.find_path(start, end)
+var shortest_path = g.find_path(end)
 g.modify_adjacency_list(shortest_path);
 
 // Tiefensuche mit Low-Werten
@@ -37,13 +39,18 @@ g.zweifache_Komponenten(start);
 
 console.log(g.components);
 
-g.create_circle(start, end);
+// g.create_circle(start, end);
+// console.log(g.circle);
+// 
+// g.checkIfCirlce(start, end);
+// console.log(g.isCircle);
+// 
+// console.log(g.complexity_counter);
+// console.log(g.circles);
+
+g.build_circle(start, end)
 console.log(g.circle);
 
-g.checkIfCirlce(start, end);
-console.log(g.isCircle);
-
-console.log(g.complexity_counter);
-console.log(g.circles);
+console.log(g.col);
 
 
