@@ -21,6 +21,7 @@ export class Graph {
   done: boolean = false;
   search_back_edge: boolean = false;
   forward: boolean = true;
+  last_node: string = "";
 
   constructor() {
     this.AdjList = new Map();
@@ -396,6 +397,9 @@ export class Graph {
     this.color_main_path(start, end);
     this.circle_animation.push(this.getGraphD3());
 
+    //this.circle.push(end);
+    //this.col.set(end, State.grey);
+
     this.end_to_start(end, start, end, true);
     if (this.circle.length != 0) {
       this.start_to_end(start, start, end, []);
@@ -470,8 +474,6 @@ export class Graph {
         // Weiterverfolgen der Rückwärtskante, bzw. Beenden der Suche -> Tiefensuche bis wieder auf Hauptpfad
       } else {
         var l_current = this.l.get(current)!;
-        // Wenn keine Rückwärtskante gefunden wird, bleibt done = false;
-        done = false;
         // Mit Low-Wert Rückwärtskante verfolgen (gibt es keine, wird next nicht verändert)
         for (const neighbour of this.AdjList.get(current)!) {
           const l_temp = this.l.get(neighbour)!;
@@ -479,18 +481,22 @@ export class Graph {
             (l_current == l_temp && this.col.get(neighbour) == State.white) ||
             neighbour == start
           ) {
-            // Finden einer Rückwärtskante, bzw. auf Rückwärtspfad bleiben
-            next = neighbour;
-            done = true;
+            // Finden vom Ende der Rückwärtskante
+            this.bfs_back_edge(end, [current], []);
+            done = false;
           }
+        }
+        if (this.last_node != "") {
+          next = this.last_node;
+          this.last_node = "";
+        } else {
+          console.log("Keine Rückwärtskante gefunden!");
+          return;
         }
       }
     }
 
     if (
-      (this.col.get(current) == State.main &&
-        this.col.get(next) != State.main &&
-        done) ||
       this.col.get(current) == State.white
     ) {
       this.col.set(current, State.black);
@@ -506,6 +512,35 @@ export class Graph {
       return;
     }
     this.end_to_start(next, start, end, done);
+  }
+  bfs_back_edge(end: string, queue: Array<string>, path: Array<string>) {
+    if (queue.length == 0) return;
+    const s = queue.shift()!;
+    path.push(s);
+
+    // Breitensuche rekursiv
+    this.col.set(s, State.grey);
+
+    for (const v of this.AdjList.get(s)!) {
+      if (this.col.get(v) == State.white && this.l.get(s) == this.l.get(v)) {
+        this.col.set(v, State.grey);
+        queue.push(v);
+      } else if (
+        this.col.get(v) == State.main &&
+        this.l.get(s) == this.d.get(v)
+      ) {
+        // Kanten zum Kreis hinzufügen (je nach Richtung)
+        if (this.forward) this.circle.push(...path);
+        else this.circle.unshift(...path.reverse());
+        // Warteschlange leeren
+        queue = [];
+        // Rückkehr auf Hauptpfad
+        this.last_node = v;
+        return;
+      }
+
+      this.bfs_back_edge(end, queue, Array.from(path));
+    }
   }
 
   connect_edge(start: string, edges: Array<string>) {
@@ -558,8 +593,6 @@ export class Graph {
     this.col.set(current, State.black);
     if (this.forward) path.push(current);
     else path.unshift(current);
-
-    this.circle_animation.push(this.getGraphD3());
 
     this.start_to_end(next, start, end, path);
   }
