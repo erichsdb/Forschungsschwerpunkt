@@ -16,15 +16,6 @@ test("zwei Knoten besitzt keinen Kreis", () => {
   var start = "A";
   var end = "B";
 
-  // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
-  g.bfs(start);
-  // Adjazenzlisten verändern, damit Hauptpfad von U -> V direkt erkennbar ist
-  var shortest_path = g.find_path(end);
-  g.modify_adjacency_list(shortest_path);
-
-  // Tiefensuche mit Low-Werten
-  g.dfs(start);
-  // Kreis bauen
   g.build_circle(start, end);
 
   // Komponenten vergleichen
@@ -49,14 +40,6 @@ test("Pfad besitzt keinen Kreis", () => {
   var start = "A";
   var end = "D";
 
-  // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
-  g.bfs(start);
-  // Adjazenzlisten verändern, damit Hauptpfad von U -> V direkt erkennbar ist
-  var shortest_path = g.find_path(end);
-  g.modify_adjacency_list(shortest_path);
-
-  // Tiefensuche mit Low-Werten
-  g.dfs(start);
   // Kreis bauen
   g.build_circle(start, end);
 
@@ -83,14 +66,6 @@ test("Kreis besitzt einen Kreis", () => {
   var start = "A";
   var end = "C";
 
-  // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
-  g.bfs(start);
-  // Adjazenzlisten verändern, damit Hauptpfad von U -> V direkt erkennbar ist
-  var shortest_path = g.find_path(end);
-  g.modify_adjacency_list(shortest_path);
-
-  // Tiefensuche mit Low-Werten
-  g.dfs(start);
   // Kreis bauen
   g.build_circle(start, end);
 
@@ -119,14 +94,6 @@ test("K_4 besitzt einen Kreis", () => {
   var start = "A";
   var end = "C";
 
-  // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
-  g.bfs(start);
-  // Adjazenzlisten verändern, damit Hauptpfad von U -> V direkt erkennbar ist
-  var shortest_path = g.find_path(end);
-  g.modify_adjacency_list(shortest_path);
-
-  // Tiefensuche mit Low-Werten
-  g.dfs(start);
   // Kreis bauen
   g.build_circle(start, end);
 
@@ -163,14 +130,7 @@ test("Komplexes Beispiel besitzt einen Kreis", () => {
   // Start- und Endwerte definieren
   var start = "U";
   var end = "V";
-  // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
-  g.bfs(start);
-  // Adjazenzlisten verändern, damit Hauptpfad von U -> V direkt erkennbar ist
-  var shortest_path = g.find_path(end);
-  g.modify_adjacency_list(shortest_path);
 
-  // Tiefensuche mit Low-Werten
-  g.dfs(start);
   // Kreis bauen
   g.build_circle(start, end);
 
