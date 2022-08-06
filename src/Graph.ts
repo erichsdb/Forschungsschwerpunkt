@@ -84,7 +84,6 @@ export class Graph {
       }
       visited_nodes.push(v);
     }
-
     return { nodes: nodes, links: edges };
   }
 
@@ -239,7 +238,7 @@ export class Graph {
    * @param start Startknoten, vom dem aus gesucht wird
    */
   zweifache_Komponenten(start: string) {
-    // Tiefensuche für L-Werte bereits gelaufen
+    // Tiefensuche für L-Werte muss bereits gelaufen sein
 
     // 1. Initialisierung
     for (const v of this.AdjList.keys()) {
@@ -304,16 +303,13 @@ export class Graph {
     this.find_path(end);
     // Tiefensuche um Low-Werte zu finden
     this.dfs(start);
-
     // Alle Knoten auf weiß setzen
     for (var u of this.AdjList.keys()) {
       this.col.set(u, State.white);
     }
-
     // Hauptpfad einfärben
     this.color_main_path(start, end);
     this.circle_animation.push(this.getGraphD3());
-
     // Kreis finden
     this.end_to_start(end, start, end, true);
     if (this.circle.length != 0) {
@@ -338,7 +334,7 @@ export class Graph {
       this.forward = !this.forward;
       this.circle_animation.push(this.getGraphD3());
       return;
-    }
+    }   
 
     // Abbruchbedingung für bereits besuchte Knoten (nicht auf Hauptpfad)
     if (this.col.get(current) == State.black) {
@@ -362,6 +358,7 @@ export class Graph {
           neighbour == start
         ) {
           next = neighbour;
+          continue;
         }
       }
       // Falls eine Rückwärtskante gefunden wurde ...
@@ -369,8 +366,7 @@ export class Graph {
         // Füge alle Knoten entland des Hauptpfades an den Kreis
         this.connect_edge(current, []);
         this.search_back_edge = false;
-      }
-      // Nehmen der nächsten Rückwärtskante
+      } 
     } else {
       // Einen Knoten nach unten gehen, wenn Rückwärtskante verlassen wurde -> Suchen der nächsten Rückwärtskante entlang des Hauptpfades
       if (!done) {
@@ -397,6 +393,7 @@ export class Graph {
             // Finden vom Ende der Rückwärtskante
             this.bfs_back_edge([current], []);
             done = false;
+            continue;
           }
         }
         // Letzter Knoten der Rückärtskante ist Ausgangspunkt für die nächste Iteration
@@ -405,25 +402,10 @@ export class Graph {
           this.last_node = "";
         } else {
           console.log("Keine Rückwärtskante gefunden!");
+          this.circle = [];
           return;
         }
       }
-    }
-
-    // Füge Knoten dem Kreis hinzu, wenn auf unberührtem Knoten
-    if (this.col.get(current) == State.white) {
-      this.col.set(current, State.black);
-      if (this.forward) this.circle.push(current);
-      else this.circle.unshift(current);
-      this.circle_animation.push(this.getGraphD3());
-    } else if (
-      this.col.get(current) == State.main &&
-      this.col.get(next) == State.main &&
-      next == this.pi.get(current)!
-    ) {
-      // TODO: Kann das passieren? Nach oben gehen auf Hauptpfad?
-      this.circle = [];
-      return;
     }
     this.end_to_start(next, start, end, done);
   }
@@ -438,8 +420,9 @@ export class Graph {
     if (queue.length == 0) return;
 
     const s = queue.shift()!;
-    path.push(s);
+    const col_s = this.col.get(s);
     this.col.set(s, State.grey);
+    path.push(s);
 
     for (const v of this.AdjList.get(s)!) {
       // Füge Knoten der Warteschlange hinzu, wenn Low-Werte übereinstimmmen
@@ -447,6 +430,7 @@ export class Graph {
         queue.push(v);
         // Füge Pfad dem Kreis hinzu, wenn Low-Wert gleich Entdeckzeit des Hauptpfadknotens
       } else if (
+        col_s != State.main &&
         this.col.get(v) == State.main &&
         this.l.get(s) == this.d.get(v)
       ) {
@@ -459,9 +443,8 @@ export class Graph {
         this.last_node = v;
         return;
       }
-
-      this.bfs_back_edge(queue, Array.from(path));
     }
+    this.bfs_back_edge(queue, Array.from(path));
   }
 
   /**
