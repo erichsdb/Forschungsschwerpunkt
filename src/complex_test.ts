@@ -1,49 +1,47 @@
 import { Graph } from "./Graph";
 import {create_31_nodes_graph} from "./graphs/31_nodes";
+// import {create_12_nodes_graph} from "./graphs/12_nodes";
+import {create_articulation_point_graph} from "./graphs/articulation_point";
 
-var g = create_31_nodes_graph();
+var g = new Graph();
+  var vertices = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J","K","L","M","N","O", "U", "V"];
 
-// console.log("Farbe");
-// console.log(g.col);
-//
-// console.log("Beendezeit");
-// console.log(g.f)
-//// console.log("Entdeckzeit");
-//console.log(g.d);
-////
+  // Knoten hinzufügen
+  for (var i = 0; i < vertices.length; i++) {
+    g.addVertex(vertices[i]);
+  }
 
-////
-//console.log("Tiefensuchwald");
-//console.log(g.pi);
+  // Pfad
+  g.addEdge("U", "A");
+  g.addEdge("A", "B");
+  g.addEdge("B", "C");
+  g.addEdge("C", "D");
+  g.addEdge("D", "V");
+  // 1. Rückwärtskante
+  g.addEdge("V", "I");
+  g.addEdge("I", "J");
+  g.addEdge("J", "D");
+  // 2. Rückwärtskante
+  g.addEdge("V", "F");
+  g.addEdge("F", "G");
+  g.addEdge("G", "E");
+  g.addEdge("E", "C");
+  // Rückwärtskante zu U
+  g.addEdge("D", "K");
+  g.addEdge("K", "L");
+  g.addEdge("L", "M");
+  g.addEdge("M", "N");
+  g.addEdge("N", "O");
+  g.addEdge("O", "U");
 
-// Start- und Endwerte definieren
-var start = "U";
-var end = "V";
+  // Start- und Endwerte definieren
+  var start = "U";
+  var end = "V";
 
-// Kürzesten Weg von Start zu Ziel finden mit Breitensuche
-g.bfs(start);
-
-var shortest_path = g.find_path(start, end)
-g.modify_adjacency_list(shortest_path);
-
-// Tiefensuche mit Low-Werten
-g.dfs(start);
-
-console.log("Low-Werte");
-console.log(g.l);
-
-// Zwei-fache Komponenten finden
-g.zweifache_Komponenten(start);
-
-console.log(g.components);
-
-g.create_circle(start, end);
+  // Kreis bauen
+  g.build_circle(start, end);
 console.log(g.circle);
 
-g.checkIfCirlce(start, end);
-console.log(g.isCircle);
-
-console.log(g.complexity_counter);
-console.log(g.circles);
+console.log(g.col);
 
 

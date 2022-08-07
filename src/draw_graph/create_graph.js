@@ -1,30 +1,16 @@
-import {create_31_nodes_graph} from "../graphs/31_nodes";
-import {create_12_nodes_graph} from "../graphs/12_nodes";
+import { create_31_nodes_graph } from "../graphs/31_nodes";
+import { create_articulation_point_graph } from "../graphs/articulation_point";
+import { Graph } from "../Graph";
 
-var g = create_31_nodes_graph();
-//var g = create_12_nodes_graph();
+var g = create_31_nodes_graph()
 
 // Start- und Endwerte definieren
 var start = "U";
 var end = "V";
 
-// Kürzesten Weg von Start zu Ziel finden mit Breitensuche
-// g.bfs(start);
-// var shortest_path = g.find_path(start, end)
-// g.modify_adjacency_list(shortest_path);
-
-// Tiefensuche mit Low-Werten
-// g.dfs(start);
-
-// Zwei-fache Komponenten finden
-// g.zweifache_Komponenten(start);
-// console.log(g.components);
-
-// g.create_circle(start, end);
-g.checkIfCirlce(start, end);
-g.colorCircle();
-
-console.log(g.circles);
+// Kreis bauen
+g.build_circle(start, end);
+console.log(g.circle);
 
 //intialize data
 var graph = g.circle_animation[0];
@@ -35,10 +21,10 @@ var width = svg.attr("width");
 var height = svg.attr("height");
 
 // Set start, end
-var start_field = d3.select("#start")
-start_field.text('Start: ' + start);
-var target_field = d3.select("#end")
-target_field.text('End: ' + end);
+var start_field = d3.select("#start");
+start_field.text("Start: " + start);
+var target_field = d3.select("#end");
+target_field.text("End: " + end);
 
 // Slider
 var xRangeSlider = document.getElementById("mySlider");
@@ -106,17 +92,16 @@ var timer = null;
 slider_button.on("click", (d) => {
   var button = d3.select("#slider-button");
 
-  if (parseInt(xRangeSlider.value) == parseInt(xRangeSlider.max)) xRangeSlider.value = xRangeSlider.min;
+  if (parseInt(xRangeSlider.value) == parseInt(xRangeSlider.max))
+    xRangeSlider.value = xRangeSlider.min;
 
-  if (button.text() == 'Play') {
+  if (button.text() == "Play") {
     timer = setInterval(step, 300);
-    button.text('Pause');
-  } else if (button.text() == 'Pause') {
+    button.text("Pause");
+  } else if (button.text() == "Pause") {
     clearInterval(timer);
-    button.text('Play');
-
+    button.text("Play");
   }
-  
 });
 
 function step() {

@@ -1,4 +1,4 @@
-import { Graph } from "../Graph.ts";
+import { Graph } from "../Graph";
 
 export function create_12_nodes_graph() {
   var g = new Graph();

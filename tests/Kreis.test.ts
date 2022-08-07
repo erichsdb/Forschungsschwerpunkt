@@ -1,4 +1,5 @@
 import { Graph } from "../src/Graph";
+import { create_articulation_point_graph } from "../src/graphs/articulation_point";
 
 test("zwei Knoten besitzt keinen Kreis", () => {
   var g = new Graph();
@@ -16,8 +17,7 @@ test("zwei Knoten besitzt keinen Kreis", () => {
   var start = "A";
   var end = "B";
 
-  g.checkIfCirlce(start, end);
-  g.colorCircle();
+  g.build_circle(start, end);
 
   // Komponenten vergleichen
   expect(g.circle).toEqual([]);
@@ -41,10 +41,66 @@ test("Pfad besitzt keinen Kreis", () => {
   var start = "A";
   var end = "D";
 
-  g.checkIfCirlce(start, end);
-  g.colorCircle();
+  // Kreis bauen
+  g.build_circle(start, end);
 
   // Komponenten vergleichen
+  expect(g.circle).toEqual([]);
+});
+
+test("Graph mit einer Rückwärtskante auf den Pfad besitzt keinen Kreis", () => {
+  var g = new Graph();
+  var vertices = [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "U",
+    "V",
+  ];
+
+  // Knoten hinzufügen
+  for (var i = 0; i < vertices.length; i++) {
+    g.addVertex(vertices[i]);
+  }
+
+  // Pfad
+  g.addEdge("U", "A");
+  g.addEdge("A", "B");
+  g.addEdge("B", "C");
+  g.addEdge("C", "D");
+  g.addEdge("V", "F");
+  g.addEdge("D", "V");
+  // Rückwärtskante
+
+  g.addEdge("F", "G");
+  g.addEdge("G", "E");
+  g.addEdge("E", "C");
+
+  // Start- und Endwerte definieren
+  var start = "U";
+  var end = "V";
+
+  // Kreis bauen
+  g.build_circle(start, end);
+
+  expect(g.circle).toEqual([]);
+});
+
+test("Graph mit Artikulationspunkt besitzt keinen Kreis", () => {
+  var g = create_articulation_point_graph();
+
+  var start = "U";
+  var end = "V";
+
+  g.build_circle(start, end);
+
   expect(g.circle).toEqual([]);
 });
 
@@ -67,8 +123,8 @@ test("Kreis besitzt einen Kreis", () => {
   var start = "A";
   var end = "C";
 
-  g.checkIfCirlce(start, end);
-  g.colorCircle();
+  // Kreis bauen
+  g.build_circle(start, end);
 
   // Komponenten vergleichen
   expect(g.circle).toEqual(["A", "B", "C", "D", "A"]);
@@ -95,11 +151,11 @@ test("K_4 besitzt einen Kreis", () => {
   var start = "A";
   var end = "C";
 
-  g.checkIfCirlce(start, end);
-  g.colorCircle();
+  // Kreis bauen
+  g.build_circle(start, end);
 
   // Komponenten vergleichen
-  expect(g.circle).toEqual(["A", "B", "C", "A"]);
+  expect(g.circle).toEqual(["A", "C", "B", "A"]);
 });
 
 test("Komplexes Beispiel besitzt einen Kreis", () => {
@@ -132,20 +188,96 @@ test("Komplexes Beispiel besitzt einen Kreis", () => {
   var start = "U";
   var end = "V";
 
-  g.checkIfCirlce(start, end);
-  g.colorCircle();
+  // Kreis bauen
+  g.build_circle(start, end);
 
   expect(g.circle).toEqual([
     "U",
+    "J",
+    "I",
+    "E",
+    "V",
+    "F",
+    "D",
+    "C",
+    "B",
+    "A",
+    "U",
+  ]);
+});
+
+test("Graph mit zwei möglichen Rückwärtskanten besitzt einen Kreis", () => {
+  var g = new Graph();
+  var vertices = [
     "A",
     "B",
     "C",
     "D",
-    "F",
-    "V",
     "E",
+    "F",
+    "G",
+    "H",
     "I",
     "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "U",
+    "V",
+  ];
+
+  // Knoten hinzufügen
+  for (var i = 0; i < vertices.length; i++) {
+    g.addVertex(vertices[i]);
+  }
+
+  // Pfad
+  g.addEdge("U", "A");
+  g.addEdge("A", "B");
+  g.addEdge("B", "C");
+  g.addEdge("C", "D");
+  g.addEdge("D", "V");
+  // 1. Rückwärtskante
+  g.addEdge("V", "I");
+  g.addEdge("I", "J");
+  g.addEdge("J", "D");
+  // 2. Rückwärtskante
+  g.addEdge("V", "F");
+  g.addEdge("F", "G");
+  g.addEdge("G", "E");
+  g.addEdge("E", "C");
+  // Rückwärtskante zu U
+  g.addEdge("D", "K");
+  g.addEdge("K", "L");
+  g.addEdge("L", "M");
+  g.addEdge("M", "N");
+  g.addEdge("N", "O");
+  g.addEdge("O", "U");
+
+  // Start- und Endwerte definieren
+  var start = "U";
+  var end = "V";
+
+  // Kreis bauen
+  g.build_circle(start, end);
+
+  expect(g.circle).toEqual([
+    "U",
+    "O",
+    "N",
+    "M",
+    "L",
+    "K",
+    "D",
+    "V",
+    "F",
+    "G",
+    "E",
+    "C",
+    "B",
+    "A",
     "U",
   ]);
 });
