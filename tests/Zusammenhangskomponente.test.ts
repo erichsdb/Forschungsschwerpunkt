@@ -21,7 +21,7 @@ test("Kreis ist eine Zusammenhangskomponente", () => {
 
   // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
   g.bfs(start);
-  g.modify_adjacency_list(g.find_path(end));
+  g.find_path(end);
 
   // Tiefensuche mit Low-Werten
   g.dfs(start);
@@ -56,7 +56,7 @@ test("K_4 ist eine zweifache Zusammenhangskomponente", () => {
 
   // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
   g.bfs(start);
-  g.modify_adjacency_list(g.find_path(end));
+  g.find_path(end);
 
   // Tiefensuche mit Low-Werten
   g.dfs(start);
@@ -94,7 +94,7 @@ test("zwei Komponenten bei zwei miteinander verbundenen Kreisen", () => {
 
   // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
   g.bfs(start);
-  g.modify_adjacency_list(g.find_path(end));
+  g.find_path(end);
 
   // Tiefensuche mit Low-Werten
   g.dfs(start);
@@ -133,7 +133,7 @@ test("Komponenten im Pfad", () => {
 
   // Kürzesten Weg von Start zu Ziel finden mit Breitensuche
   g.bfs(start);
-  g.modify_adjacency_list(g.find_path(end));
+  g.find_path(end);
 
   // Tiefensuche mit Low-Werten
   g.dfs(start);
