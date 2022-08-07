@@ -79,7 +79,7 @@ export class Graph {
         ) {
           // Kante liegt im Kreis
           edges.push({ source: v, target: u, color: State.circle });
-        } // Kante liegt nicht im Kreis 
+        } // Kante liegt nicht im Kreis
         else edges.push({ source: v, target: u, color: "black" });
       }
       visited_nodes.push(v);
@@ -101,8 +101,7 @@ export class Graph {
 
     // 2. Breitensuche mit Warteschlange
     this.col.set(s, State.grey);
-    var Q = [];
-    Q.push(s);
+    var Q = [s];
     this.bfs_animation.push(this.getGraphD3());
 
     while (Q.length != 0) {
@@ -125,15 +124,12 @@ export class Graph {
    * Nach der Breitensuche findet diese Funktion den kürzesten Weg von Start zu Ende
    * über die Elternknoten.
    * @param end Endknoten
-   * @returns Array<string> mit Pfad von Start zu Ende
    */
   find_path(end: string) {
-    var result = [];
     var current = end;
     var next = current;
     // Nur der Startknoten hat keinen Vorgänger
     while (next != null) {
-      result.push(next);
       next = this.pi.get(next)!;
 
       // Schiebe Hauptpfadknoten an Position 0 der Adjazenzliste
@@ -149,29 +145,6 @@ export class Graph {
         this.AdjList.set(next, neighbours);
       }
       current = next;
-    }
-    result = result.reverse();
-    return result;
-  }
-
-  /**
-   * Diese Funktion verändert die Adjazenzliste so, dass bei DFS immer der kürzeste Weg vom
-   * Startknoten zum Zielknoten gewählt wird.
-   * @param path Array<string>: Kürzester Weg vom Startknoten zu Endknoten
-   */
-  modify_adjacency_list(path: Array<string>) {
-    for (let i = 0; i < path.length - 1; i++) {
-      var neighbours = this.AdjList.get(path[i]);
-      if (neighbours && neighbours[0] != path[i + 1]) {
-        // Finde index des nächsten Knotens
-        const index = neighbours.findIndex((x) => x === path[i + 1]);
-        // Tausche mit erster Stelle
-        const b = neighbours[0];
-        neighbours[0] = neighbours[index];
-        neighbours[index] = b;
-        // Aktualisiere Adajenzliste
-        this.AdjList.set(path[i], neighbours);
-      }
     }
   }
 
@@ -292,7 +265,7 @@ export class Graph {
    * Baut einen Kreis über zwei disjunkte Wege von start nach end.
    * Diese Methode nutzt Breitensuche, um den Hauptpfad zu finden und
    * die Adjazenzliste zu verändern und Tiefensuche, um die Low-Werte,
-   * Entdeckzeit, Beendezeit und Vorgänger zu ermitteln. 
+   * Entdeckzeit, Beendezeit und Vorgänger zu ermitteln.
    * @param start Startknoten
    * @param end Endknoten
    */
@@ -313,7 +286,7 @@ export class Graph {
     // Kreis finden
     this.end_to_start(end, start, end, true);
     if (this.circle.length != 0) {
-      this.col.set(start, State.main);
+      this.col.set(start, State.black);
       this.connect_edge(start, []);
     }
   }
@@ -328,21 +301,15 @@ export class Graph {
   end_to_start(current: string, start: string, end: string, done: boolean) {
     // Abfangen beim Erreichen des Start
     if (current == start) {
-      this.col.set(current, State.black);
+      this.col.set(current, State.grey);
       if (this.forward) this.circle.push(current);
       else this.circle.unshift(current);
       this.forward = !this.forward;
       this.circle_animation.push(this.getGraphD3());
       return;
-    }   
-
-    // Abbruchbedingung für bereits besuchte Knoten (nicht auf Hauptpfad)
-    if (this.col.get(current) == State.black) {
-      this.circle = [];
-      return;
     }
 
-    // Nächste Knoten der Adjazenzliste
+    // Nächster Knoten der Adjazenzliste
     var next = this.AdjList.get(current)![0];
 
     // Suchen der nächsten Rückwärtskante entlang des Hauptpfades
@@ -353,20 +320,21 @@ export class Graph {
       for (const neighbour of this.AdjList.get(current)!) {
         const l_temp = this.l.get(neighbour)!;
         // Exisitiert eine Rückwärtskante?
-        if (
-          (l_current == l_temp && this.col.get(neighbour) == State.white) ||
-          neighbour == start
-        ) {
+        if (l_current == l_temp && this.col.get(neighbour) == State.white) {
           next = neighbour;
-          continue;
+          break;
         }
       }
       // Falls eine Rückwärtskante gefunden wurde ...
       if (next != this.AdjList.get(current)![0]) {
-        // Füge alle Knoten entland des Hauptpfades an den Kreis
+        // Füge alle Knoten entlang des Hauptpfades an den Kreis
         this.connect_edge(current, []);
         this.search_back_edge = false;
-      } 
+      } else if (this.col.get(current) != State.black) {
+        console.log("Kann Hauptpfad nicht weiter verfolgen");
+        this.circle = [];
+        return;
+      }
     } else {
       // Einen Knoten nach unten gehen, wenn Rückwärtskante verlassen wurde -> Suchen der nächsten Rückwärtskante entlang des Hauptpfades
       if (!done) {
@@ -386,14 +354,11 @@ export class Graph {
         // Mit Low-Wert Rückwärtskante verfolgen (gibt es keine, wird next nicht verändert)
         for (const neighbour of this.AdjList.get(current)!) {
           const l_temp = this.l.get(neighbour)!;
-          if (
-            (l_current == l_temp && this.col.get(neighbour) == State.white) ||
-            neighbour == start
-          ) {
+          if (l_current == l_temp && this.col.get(neighbour) == State.white) {
             // Finden vom Ende der Rückwärtskante
             this.bfs_back_edge([current], []);
             done = false;
-            continue;
+            break;
           }
         }
         // Letzter Knoten der Rückärtskante ist Ausgangspunkt für die nächste Iteration
@@ -430,8 +395,8 @@ export class Graph {
         queue.push(v);
         // Füge Pfad dem Kreis hinzu, wenn Low-Wert gleich Entdeckzeit des Hauptpfadknotens
       } else if (
-        col_s != State.main &&
-        this.col.get(v) == State.main &&
+        col_s != State.black &&
+        this.col.get(v) == State.black &&
         this.l.get(s) == this.d.get(v)
       ) {
         // Kanten zum Kreis hinzufügen (je nach Richtung)
@@ -455,18 +420,15 @@ export class Graph {
    */
   connect_edge(start: string, edges: Array<string>) {
     // Füge Pfad dem Kreis hinzu, wenn ein bereits besuchter Knoten erreicht wird
-    if (
-      this.col.get(start) == State.black ||
-      this.col.get(start) == State.grey
-    ) {
-      if (this.forward) this.circle.push(...edges);
-      else this.circle.unshift(...edges.reverse());
+    if (this.col.get(start) == State.grey) {
+      if (this.forward) this.circle.push(...edges.reverse());
+      else this.circle.unshift(...edges);
       this.circle_animation.push(this.getGraphD3());
       return;
     }
     // Rufe nächsten Hauptknoten in Adjazenzliste auf
     this.col.set(start, State.grey);
-    edges.unshift(start);
+    edges.push(start);
     this.circle_animation.push(this.getGraphD3());
 
     // Gehe auf Hauptpfad nach unten
@@ -481,8 +443,8 @@ export class Graph {
    */
   color_main_path(start: string, end: string) {
     var next = this.AdjList.get(start)![0];
-    this.col.set(start, State.main);
-    if (next == end) this.col.set(next, State.main);
+    this.col.set(start, State.black);
+    if (next == end) this.col.set(next, State.black);
     else this.color_main_path(next, end);
   }
 }
