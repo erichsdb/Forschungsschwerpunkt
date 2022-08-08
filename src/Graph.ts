@@ -14,8 +14,6 @@ export class Graph {
   circle: Array<string>;
   bfs_animation: Array<{}>;
   circle_animation: Array<{}>;
-  iteration_counter: number;
-  done: boolean = false;
   search_back_edge: boolean = false;
   forward: boolean = true;
   last_node: string = "";
@@ -33,7 +31,6 @@ export class Graph {
     this.circle = [];
     this.bfs_animation = [];
     this.circle_animation = [];
-    this.iteration_counter = 0;
   }
 
   addVertex(v: string) {
