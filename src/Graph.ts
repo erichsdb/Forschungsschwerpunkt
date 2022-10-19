@@ -128,7 +128,6 @@ export class Graph {
     var next = this.pi.get(current)!;
     // Nur der Startknoten hat keinen Vorgänger
     while (next != null) {
-
       // Schiebe Hauptpfadknoten an Position 0 der Adjazenzliste
       var neighbours = this.AdjList.get(next)!;
       if (neighbours[0] != current) {
@@ -376,44 +375,7 @@ export class Graph {
   /**
    * Diese Methode findet eine Rückwärtskante über die Low-Werte.
    * Fügt gefundene Knoten dem Kreis hinzu.
-   * @param queue Warteschlange mit noch abzuarbeitenden Knoten
-   * @param path bisher entdeckte Rückwärtskante
-   */
-  bfs_back_edge(queue: Array<string>, path: Array<string>) {
-    if (queue.length == 0) return;
-
-    const s = queue.shift()!;
-    const col_s = this.col.get(s);
-    this.col.set(s, State.grey);
-    path.push(s);
-
-    for (const v of this.AdjList.get(s)!) {
-      // Füge Knoten der Warteschlange hinzu, wenn Low-Werte übereinstimmmen
-      if (this.col.get(v) == State.white && this.l.get(s) == this.l.get(v)) {
-        queue.push(v);
-        // Füge Pfad dem Kreis hinzu, wenn Low-Wert gleich Entdeckzeit des Hauptpfadknotens
-      } else if (
-        col_s != State.black &&
-        this.col.get(v) == State.black &&
-        this.l.get(s) == this.d.get(v)
-      ) {
-        // Kanten zum Kreis hinzufügen (je nach Richtung)
-        if (this.forward) this.circle.push(...path);
-        else this.circle.unshift(...path.reverse());
-        // Warteschlange leeren
-        queue = [];
-        // Rückkehr auf Hauptpfad
-        this.last_node = v;
-        return;
-      }
-    }
-    this.bfs_back_edge(queue, Array.from(path));
-  }
-
-  /**
-   * Diese Methode findet eine Rückwärtskante über die Low-Werte.
-   * Fügt gefundene Knoten dem Kreis hinzu.
-   * @param start Startknoten 
+   * @param start Startknoten
    * @param path Pfad vom Hauptpfad zur Rückwärtskante
    */
   find_back_edge(start: string, path: Array<string>) {
@@ -425,8 +387,11 @@ export class Graph {
       const col_s = this.col.get(next);
       this.col.set(next, State.grey);
       for (const i of this.AdjList.get(next)!) {
-        if (        col_s != State.black &&
-          this.col.get(i) == State.black && this.d.get(i) == low_current && i != this.pi.get(next)) {
+        if (
+          col_s != State.black &&
+          this.col.get(i) == State.black &&
+          this.d.get(i) == low_current
+        ) {
           // Hauptpfad gefunden
           next = i;
           // Kanten zum Kreis hinzufügen (je nach Richtung)
@@ -435,7 +400,10 @@ export class Graph {
           // Rückkehr auf Hauptpfad
           this.last_node = i;
           return;
-        } else if (this.l.get(i) == low_current && this.col.get(i) == State.white) {
+        } else if (
+          this.l.get(i) == low_current &&
+          this.col.get(i) == State.white
+        ) {
           // nächsten Knoten gefunden
           next = i;
           continue;
