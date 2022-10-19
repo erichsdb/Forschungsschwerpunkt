@@ -43,6 +43,7 @@ export function create_31_nodes_graph() {
   }
 
   // Kanten hinzufügen
+  g.addEdge("R", "W");
   g.addEdge("B", "W");
   g.addEdge("B", "R");
   
@@ -74,7 +75,7 @@ export function create_31_nodes_graph() {
   g.addEdge("O", "R");
   g.addEdge("O", "S");
   g.addEdge("P", "Q");
-  g.addEdge("R", "W");
+
   //g.addEdge("R", "L");
   g.addEdge('Q', 'S')
   // g.addEdge("S", "T");

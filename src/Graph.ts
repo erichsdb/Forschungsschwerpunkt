@@ -1,3 +1,4 @@
+import { path } from "d3";
 import { State } from "./State";
 
 // Klasse für ungerichtete Graphen
@@ -124,14 +125,13 @@ export class Graph {
    */
   find_path(end: string) {
     var current = end;
-    var next = current;
+    var next = this.pi.get(current)!;
     // Nur der Startknoten hat keinen Vorgänger
     while (next != null) {
-      next = this.pi.get(next)!;
 
       // Schiebe Hauptpfadknoten an Position 0 der Adjazenzliste
-      var neighbours = this.AdjList.get(next);
-      if (neighbours && neighbours[0] != current) {
+      var neighbours = this.AdjList.get(next)!;
+      if (neighbours[0] != current) {
         // Finde index des nächsten Knotens
         const index = neighbours.findIndex((x) => x === current);
         // Tausche mit erster Stelle
@@ -142,6 +142,7 @@ export class Graph {
         this.AdjList.set(next, neighbours);
       }
       current = next;
+      next = this.pi.get(next)!;
     }
   }
 
@@ -353,7 +354,7 @@ export class Graph {
           const l_temp = this.l.get(neighbour)!;
           if (l_current == l_temp && this.col.get(neighbour) == State.white) {
             // Finden vom Ende der Rückwärtskante
-            this.bfs_back_edge([current], []);
+            this.find_back_edge(current, []);
             done = false;
             break;
           }
@@ -407,6 +408,41 @@ export class Graph {
       }
     }
     this.bfs_back_edge(queue, Array.from(path));
+  }
+
+  /**
+   * Diese Methode findet eine Rückwärtskante über die Low-Werte.
+   * Fügt gefundene Knoten dem Kreis hinzu.
+   * @param start Startknoten 
+   * @param path Pfad vom Hauptpfad zur Rückwärtskante
+   */
+  find_back_edge(start: string, path: Array<string>) {
+    var next = start;
+    while (true) {
+      var current = next;
+      const low_current = this.l.get(next);
+      path.push(next);
+      const col_s = this.col.get(next);
+      this.col.set(next, State.grey);
+      for (const i of this.AdjList.get(next)!) {
+        if (        col_s != State.black &&
+          this.col.get(i) == State.black && this.d.get(i) == low_current && i != this.pi.get(next)) {
+          // Hauptpfad gefunden
+          next = i;
+          // Kanten zum Kreis hinzufügen (je nach Richtung)
+          if (this.forward) this.circle.push(...path);
+          else this.circle.unshift(...path.reverse());
+          // Rückkehr auf Hauptpfad
+          this.last_node = i;
+          return;
+        } else if (this.l.get(i) == low_current && this.col.get(i) == State.white) {
+          // nächsten Knoten gefunden
+          next = i;
+          continue;
+        }
+      }
+      if (current == next) return;
+    }
   }
 
   /**
