@@ -1,6 +1,5 @@
 import { create_31_nodes_graph } from "../graphs/31_nodes";
 import { create_articulation_point_graph } from "../graphs/articulation_point";
-import { Graph } from "../Graph";
 
 var g = create_31_nodes_graph()
 

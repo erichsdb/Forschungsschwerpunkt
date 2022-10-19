@@ -15,7 +15,7 @@ export class Graph {
   circle: Array<string>;
   bfs_animation: Array<{}>;
   circle_animation: Array<{}>;
-  scan_main_path: boolean = false;
+  do_scan_main_path: boolean = false;
   forward: boolean = true;
   last_node: string = "";
   next = "";
@@ -311,7 +311,7 @@ export class Graph {
     this.next = this.AdjList.get(current)![0];
 
     // Suchen der nächsten Rückwärtskante entlang des Hauptpfades
-    if (this.scan_main_path) {
+    if (this.do_scan_main_path) {
       this.next_node(current);
       // Falls eine Rückwärtskante gefunden wurde ...
       if (this.next != this.AdjList.get(current)![0]) {
@@ -370,7 +370,7 @@ export class Graph {
     // Richtungsänderung, wie Knoten dem Kreis hinzugefügt werden (von vorne/hinten)
     this.forward = !this.forward;
     // Suchen der nächsten Rückwärtskante entlang des Hauptpfades
-    this.scan_main_path = true;
+    this.do_scan_main_path = true;
   }
 
   /**
@@ -392,17 +392,14 @@ export class Graph {
 
     for (const i of this.AdjList.get(current)!) {
       if (
-        col_current != State.black &&
-        this.col.get(i) == State.black &&
-        this.d.get(i) == low_current
+        this.d.get(i) == low_current && this.pi.get(current) != i
       ) {
         // Rückkehr auf Hauptpfad
         this.next = i;
         this.do_find_back_edge = false;
         return 0;
       } else if (
-        this.l.get(i) == low_current &&
-        this.col.get(i) == State.white
+        this.l.get(i) == low_current && this.pi.get(current) != i
       ) {
         // nächsten Knoten gefunden
         this.next = i;
@@ -426,7 +423,7 @@ export class Graph {
       if (this.forward) this.circle.push(...edges.reverse());
       else this.circle.unshift(...edges);
       this.circle_animation.push(this.getGraphD3());
-      this.scan_main_path = false;
+      this.do_scan_main_path = false;
       return;
     }
     // Rufe nächsten Hauptknoten in Adjazenzliste auf
