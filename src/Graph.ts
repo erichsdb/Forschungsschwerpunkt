@@ -347,22 +347,31 @@ export class Graph {
         this.search_back_edge = true;
         // Entdecken der Rückwärtskante
       } else {
-        var l_current = this.l.get(current)!;
-        // Mit Low-Wert Rückwärtskante verfolgen (gibt es keine, wird next nicht verändert)
-        for (const neighbour of this.AdjList.get(current)!) {
-          const l_temp = this.l.get(neighbour)!;
-          if (l_current == l_temp && this.col.get(neighbour) == State.white) {
-            // Finden vom Ende der Rückwärtskante
-            this.find_back_edge(current, []);
+        // Baumkanten mit gleichem Low_Wert verfolgen bis Rückwärtskante gefunden wird
+        const low_current = this.l.get(current);
+        const col_current = this.col.get(current);
+        this.col.set(current, State.grey);
+        next = current;
+        // Kanten zum Kreis hinzufügen (je nach Richtung)
+        if (this.forward) this.circle.push(current);
+        else this.circle.unshift(current);
+
+        for (const i of this.AdjList.get(current)!) {
+          if (col_current != State.black && this.col.get(i) == State.black && this.d.get(i) == low_current) {
+            // Rückkehr auf Hauptpfad
+            next = i;
             done = false;
+            break;
+          } else if (
+            this.l.get(i) == low_current &&
+            this.col.get(i) == State.white
+          ) {
+            // nächsten Knoten gefunden
+            next = i;
             break;
           }
         }
-        // Letzter Knoten der Rückärtskante ist Ausgangspunkt für die nächste Iteration
-        if (this.last_node != "") {
-          next = this.last_node;
-          this.last_node = "";
-        } else {
+        if (current == next) {
           console.log("Keine Rückwärtskante gefunden!");
           this.circle = [];
           return;
