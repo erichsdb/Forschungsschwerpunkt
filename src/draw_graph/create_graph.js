@@ -12,7 +12,6 @@ console.log(g.circle);
 
 //intialize data
 var graph = g.circle_animation[0];
-console.log(g.circle_animation)
 
 //initilize svg or grab svg
 var svg = d3.select("svg");
