@@ -1,108 +1,6 @@
 import { Graph } from "../src/Graph";
 import { create_articulation_point_graph } from "../src/graphs/articulation_point";
-
-test("zwei Knoten besitzt keinen Kreis", () => {
-  var g = new Graph();
-  var vertices = ["A", "B"];
-
-  // Knoten hinzufügen
-  for (var i = 0; i < vertices.length; i++) {
-    g.addVertex(vertices[i]);
-  }
-
-  // Kanten hinzufügen
-  g.addEdge("A", "B");
-
-  // Start- und Endwerte definieren
-  var start = "A";
-  var end = "B";
-
-  g.build_circle(start, end);
-
-  // Komponenten vergleichen
-  expect(g.circle).toEqual([]);
-});
-
-test("Pfad besitzt keinen Kreis", () => {
-  var g = new Graph();
-  var vertices = ["A", "B", "C", "D"];
-
-  // Knoten hinzufügen
-  for (var i = 0; i < vertices.length; i++) {
-    g.addVertex(vertices[i]);
-  }
-
-  // Kanten hinzufügen
-  g.addEdge("A", "B");
-  g.addEdge("B", "C");
-  g.addEdge("C", "D");
-
-  // Start- und Endwerte definieren
-  var start = "A";
-  var end = "D";
-
-  // Kreis bauen
-  g.build_circle(start, end);
-
-  // Komponenten vergleichen
-  expect(g.circle).toEqual([]);
-});
-
-test("Graph mit einer Rückwärtskante auf den Pfad besitzt keinen Kreis", () => {
-  var g = new Graph();
-  var vertices = [
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "I",
-    "J",
-    "U",
-    "V",
-  ];
-
-  // Knoten hinzufügen
-  for (var i = 0; i < vertices.length; i++) {
-    g.addVertex(vertices[i]);
-  }
-
-  // Pfad
-  g.addEdge("U", "A");
-  g.addEdge("A", "B");
-  g.addEdge("B", "C");
-  g.addEdge("C", "D");
-  g.addEdge("V", "F");
-  g.addEdge("D", "V");
-  // Rückwärtskante
-
-  g.addEdge("F", "G");
-  g.addEdge("G", "E");
-  g.addEdge("E", "C");
-
-  // Start- und Endwerte definieren
-  var start = "U";
-  var end = "V";
-
-  // Kreis bauen
-  g.build_circle(start, end);
-
-  expect(g.circle).toEqual([]);
-});
-
-test("Graph mit Artikulationspunkt besitzt keinen Kreis", () => {
-  var g = create_articulation_point_graph();
-
-  var start = "U";
-  var end = "V";
-
-  g.build_circle(start, end);
-
-  expect(g.circle).toEqual([]);
-});
+import { create_31_nodes_graph } from "../src/graphs/31_nodes";
 
 test("Kreis besitzt einen Kreis", () => {
   var g = new Graph();
@@ -278,6 +176,49 @@ test("Graph mit zwei möglichen Rückwärtskanten besitzt einen Kreis", () => {
     "C",
     "B",
     "A",
+    "U",
+  ]);
+});
+
+test("Komplexes Beispiel besitzt einen Kreis", () => {
+  var g = create_31_nodes_graph();
+
+  // Start- und Endwerte definieren
+  var start = "U";
+  var end = "V";
+
+  // Kreis bauen
+  g.build_circle(start, end);
+
+  // Komponenten vergleichen
+  expect(g.circle).toEqual([
+    "U",
+    "A",
+    "E",
+    "H",
+    "J",
+    "M",
+    "N",
+    "L",
+    "O",
+    "R",
+    "W",
+    "X",
+    "Y",
+    "D1",
+    "V",
+    "C1",
+    "B1",
+    "A1",
+    "Z",
+    "S",
+    "Q",
+    "P",
+    "K",
+    "I",
+    "G",
+    "F",
+    "C",
     "U",
   ]);
 });
