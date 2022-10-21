@@ -317,7 +317,7 @@ export class Graph {
       if (this.next != this.AdjList.get(current)![0]) {
         // Füge alle Knoten entlang des Hauptpfades an den Kreis
         this.connect_edge(current, []);
-      } else {
+      } else if (this.col.get(current) != State.black){
         console.log("Kann Hauptpfad nicht weiter verfolgen");
         this.circle = [];
         return;
@@ -390,14 +390,14 @@ export class Graph {
 
     for (const i of this.AdjList.get(current)!) {
       if (
-        this.d.get(i) == low_current && this.pi.get(current) != i
+        this.d.get(i) == low_current && this.pi.get(current) != i && this.d.get(i)! < this.d.get(current)!
       ) {
         // Rückkehr auf Hauptpfad
         this.next = i;
         this.do_find_back_edge = false;
         return 0;
       } else if (
-        this.l.get(i) == low_current && this.pi.get(current) != i
+        this.l.get(i) == low_current && this.pi.get(current) != i && this.d.get(i)! > this.d.get(current)!
       ) {
         // nächsten Knoten gefunden
         this.next = i;
