@@ -17,7 +17,6 @@ export class Graph {
   circle_animation: Array<{}>;
   do_scan_main_path: boolean = false;
   forward: boolean = true;
-  last_node: string = "";
   next = "";
   do_find_back_edge = true;
 
@@ -374,7 +373,6 @@ export class Graph {
    */
   find_back_edge(current: string) {
     // Baumkanten mit gleichem Low_Wert verfolgen bis Rückwärtskante gefunden wird
-    const low_current = this.l.get(current);
     this.col.set(current, State.grey);
     this.next = current;
     // Kanten zum Kreis hinzufügen (je nach Richtung)
@@ -383,12 +381,19 @@ export class Graph {
     this.circle_animation.push(this.getGraphD3());
 
     for (const i of this.AdjList.get(current)!) {
-      if (this.d.get(i) == low_current && this.pi.get(current) != i && this.d.get(i)! < this.d.get(current)!) {
+      if (this.pi.get(current) == i) continue;
+      if (
+        this.d.get(i) == this.l.get(current) &&
+        this.d.get(i)! < this.d.get(current)!
+      ) {
         // Rückkehr auf Hauptpfad
         this.next = i;
         this.do_find_back_edge = false;
         return 0;
-      } else if (this.l.get(i) == low_current && this.pi.get(current) != i && this.d.get(i)! > this.d.get(current)!) {
+      } else if (
+        this.l.get(i) == this.l.get(current) &&
+        this.d.get(i)! > this.d.get(current)!
+      ) {
         // nächsten Knoten gefunden
         this.next = i;
         return 0;
