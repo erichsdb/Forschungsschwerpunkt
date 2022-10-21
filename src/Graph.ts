@@ -1,4 +1,3 @@
-import { path } from "d3";
 import { State } from "./State";
 
 // Klasse für ungerichtete Graphen
@@ -78,12 +77,19 @@ export class Graph {
               this.circle.lastIndexOf(u) == v_index + 1))
         ) {
           // Kante liegt im Kreis
-          if (this.d.get(u)! > this.d.get(v)! && this.d.get(v) == this.l.get(u))
-            // Kante ist Rückwärtskante  
-            edges.push({ source: v, target: u, color: State.circle, dashed: true});
-          else 
-            // Kante ist keine Rückwärtskante
-            edges.push({ source: v, target: u, color: State.circle });
+          if (
+            this.d.get(v) == this.l.get(u) && this.d.get(v)! < this.d.get(u)! && this.pi.get(u) != v ||
+            (this.d.get(u) == this.l.get(v) && this.d.get(u)! < this.d.get(v)! && this.pi.get(v) != u)
+          )
+            // Kante ist Rückwärtskante
+            edges.push({
+              source: v,
+              target: u,
+              color: State.circle,
+              dashed: true,
+            });
+          // Kante ist keine Rückwärtskante
+          else edges.push({ source: v, target: u, color: State.circle });
         } // Kante liegt nicht im Kreis
         else edges.push({ source: v, target: u, color: "black" });
       }
@@ -322,7 +328,7 @@ export class Graph {
       if (this.next != this.AdjList.get(current)![0]) {
         // Füge alle Knoten entlang des Hauptpfades an den Kreis
         this.connect_edge(current, []);
-      } else if (this.col.get(current) != State.black){
+      } else if (this.col.get(current) != State.black) {
         console.log("Kann Hauptpfad nicht weiter verfolgen");
         this.circle = [];
         return;
@@ -354,7 +360,7 @@ export class Graph {
         this.col.get(neighbour) == State.white
       ) {
         this.next = neighbour;
-        return
+        return;
       }
     }
   }
@@ -396,14 +402,18 @@ export class Graph {
 
     for (const i of this.AdjList.get(current)!) {
       if (
-        this.d.get(i) == low_current && this.pi.get(current) != i && this.d.get(i)! < this.d.get(current)!
+        this.d.get(i) == low_current &&
+        this.pi.get(current) != i &&
+        this.d.get(i)! < this.d.get(current)!
       ) {
         // Rückkehr auf Hauptpfad
         this.next = i;
         this.do_find_back_edge = false;
         return 0;
       } else if (
-        this.l.get(i) == low_current && this.pi.get(current) != i && this.d.get(i)! > this.d.get(current)!
+        this.l.get(i) == low_current &&
+        this.pi.get(current) != i &&
+        this.d.get(i)! > this.d.get(current)!
       ) {
         // nächsten Knoten gefunden
         this.next = i;
