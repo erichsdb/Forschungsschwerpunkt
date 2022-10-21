@@ -1,5 +1,4 @@
 import { create_31_nodes_graph } from "../graphs/31_nodes";
-import { create_articulation_point_graph } from "../graphs/articulation_point";
 
 var g = create_31_nodes_graph()
 
@@ -13,6 +12,7 @@ console.log(g.circle);
 
 //intialize data
 var graph = g.circle_animation[0];
+console.log(g.circle_animation)
 
 //initilize svg or grab svg
 var svg = d3.select("svg");
@@ -54,7 +54,10 @@ var links = svg
   .attr("stroke-width", function (d) {
     return 3;
   })
-  .style("stroke", (d) => d.color);
+  .attr('class', function(d) {
+    if(d.dashed) return 'dashed';
+  })
+  .style("stroke", (d) => d.color)
 
 var drag = d3
   .drag()
@@ -138,7 +141,11 @@ function update(selectedValue) {
   svg
     .selectAll("line")
     .data(graph.links)
-    .style("stroke", (d) => d.color);
+    .style("stroke", (d) => d.color)
+    .style("stroke-dasharray", function(d) {
+      if(d.dashed) return '5.5'
+      else return 0;
+    })
 }
 
 function ticked() {

@@ -78,7 +78,12 @@ export class Graph {
               this.circle.lastIndexOf(u) == v_index + 1))
         ) {
           // Kante liegt im Kreis
-          edges.push({ source: v, target: u, color: State.circle });
+          if (this.d.get(u)! > this.d.get(v)! && this.d.get(v) == this.l.get(u))
+            // Kante ist Rückwärtskante  
+            edges.push({ source: v, target: u, color: State.circle, dashed: true});
+          else 
+            // Kante ist keine Rückwärtskante
+            edges.push({ source: v, target: u, color: State.circle });
         } // Kante liegt nicht im Kreis
         else edges.push({ source: v, target: u, color: "black" });
       }
@@ -362,6 +367,7 @@ export class Graph {
    */
   one_node_down(current: string) {
     this.col.set(current, State.grey);
+    // current needs to be flagged to have a different line style in the visualization :TODO:
     if (this.forward) this.circle.push(current);
     else this.circle.unshift(current);
     this.circle_animation.push(this.getGraphD3());
