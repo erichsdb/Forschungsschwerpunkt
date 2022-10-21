@@ -317,7 +317,7 @@ export class Graph {
       if (this.next != this.AdjList.get(current)![0]) {
         // Füge alle Knoten entlang des Hauptpfades an den Kreis
         this.connect_edge(current, []);
-      } else if (this.col.get(current) != State.black) {
+      } else {
         console.log("Kann Hauptpfad nicht weiter verfolgen");
         this.circle = [];
         return;
@@ -337,16 +337,15 @@ export class Graph {
 
   /**
    * Sucht vom Hauptpfad einen Knoten, wo die Low-Werte übereinstimmen und
-   *  welcher nicht besucht wurde.
+   * welcher nicht besucht wurde.
    * @param current Startknoten
    */
   next_node(current: string) {
     // Iterieren über alle Nachbarn
     for (const neighbour of this.AdjList.get(current)!) {
-      const l_temp = this.l.get(neighbour)!;
       // Exisitiert eine Rückwärtskante?
       if (
-        this.l.get(current) == l_temp &&
+        this.l.get(current) == this.l.get(neighbour)! &&
         this.col.get(neighbour) == State.white
       ) {
         this.next = neighbour;
@@ -382,7 +381,6 @@ export class Graph {
   find_back_edge(current: string) {
     // Baumkanten mit gleichem Low_Wert verfolgen bis Rückwärtskante gefunden wird
     const low_current = this.l.get(current);
-    const col_current = this.col.get(current);
     this.col.set(current, State.grey);
     this.next = current;
     // Kanten zum Kreis hinzufügen (je nach Richtung)
