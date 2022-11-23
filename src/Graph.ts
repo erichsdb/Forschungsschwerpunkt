@@ -1,3 +1,4 @@
+import { Console } from "console";
 import { State } from "./State";
 
 // Klasse für ungerichtete Graphen
@@ -19,6 +20,7 @@ export class Graph {
   last_node: string = "";
   next = "";
   do_find_back_edge = true;
+  visited_nodes: Array<string> = [];
 
   constructor() {
     this.AdjList = new Map();
@@ -56,7 +58,8 @@ export class Graph {
     var visited_nodes = [];
     var nodes = [];
     for (const v of this.AdjList.keys()) {
-      nodes.push({ name: v, color: this.col.get(v) });
+      var label = `${v}|l:${this.l.get(v)}|d:${this.d.get(v)}`;
+      nodes.push({ name: v, color: this.col.get(v), label: label});
     }
 
     // Visualisierung der Kanten
@@ -295,10 +298,6 @@ export class Graph {
     this.circle_animation.push(this.getGraphD3());
     // Kreis finden
     this.end_to_start(end, start, end);
-    if (this.circle.length != 0) {
-      this.col.set(start, State.black);
-      this.connect_edge(start, []);
-    }
   }
 
   /**
@@ -308,13 +307,14 @@ export class Graph {
    * @param end Endknoten
    */
   end_to_start(current: string, start: string, end: string) {
+    this.visited_nodes.push(current);
     // Abfangen beim Erreichen des Start
     if (current == start) {
-      this.col.set(current, State.grey);
       if (this.forward) this.circle.push(current);
       else this.circle.unshift(current);
       this.forward = !this.forward;
       this.circle_animation.push(this.getGraphD3());
+      this.connect_edge(start, []);
       return;
     }
 

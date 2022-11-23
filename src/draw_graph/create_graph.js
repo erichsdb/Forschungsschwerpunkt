@@ -81,7 +81,7 @@ var texts = textsAndNodes
   .append("text")
   .attr("x", 6)
   .attr("y", 3)
-  .text((d) => d.name);
+  .text((d) => d.label);
 
 var slider = d3.select("#mySlider").on("change", (d) => {
   update(xRangeSlider.value);

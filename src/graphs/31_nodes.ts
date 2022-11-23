@@ -43,17 +43,22 @@ export function create_31_nodes_graph() {
   }
 
   // Kanten hinzufügen
+  // g.addEdge("B", "E");
+  // g.addEdge("B", "D");
+  // g.addEdge("U", "B");
+  // g.addEdge("S", "T");
+  // g.addEdge("S", "W");
+  // g.addEdge("Y", "Z");
+  // g.addEdge("R", "L");
+  // g.addEdge("T", "A1");
+  // g.addEdge("E1", "V");
   g.addEdge("R", "W");
   g.addEdge("B", "W");
   g.addEdge("B", "R");
-  
   g.addEdge("U", "A");
-  // g.addEdge("U", "B");
   g.addEdge("U", "C");
   g.addEdge("A", "D");
   g.addEdge("A", "E");
- // g.addEdge("B", "E");
- // g.addEdge("B", "D");
   g.addEdge("C", "F");
   g.addEdge("D", "F");
   g.addEdge("D", "G");
@@ -75,16 +80,10 @@ export function create_31_nodes_graph() {
   g.addEdge("O", "R");
   g.addEdge("O", "S");
   g.addEdge("P", "Q");
-
-  //g.addEdge("R", "L");
   g.addEdge('Q', 'S')
-  // g.addEdge("S", "T");
-  // g.addEdge("S", "W");
   g.addEdge("S", "Z");
-  // g.addEdge("T", "A1");
   g.addEdge("W", "X");
   g.addEdge("X", "Y");
-  // g.addEdge("Y", "Z");
   g.addEdge("Y", "D1");
   g.addEdge("S", "E1");
   g.addEdge("Z", "A1");
@@ -93,7 +92,7 @@ export function create_31_nodes_graph() {
   g.addEdge("C1", "V");
   g.addEdge("D1", "V");
   g.addEdge("D1", "E1");
-  // g.addEdge("E1", "V");
+  
 
   return g;
 }
